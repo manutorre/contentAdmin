@@ -1,32 +1,134 @@
+.administrator__global__container{
+  height:800px;
+}
+
+.watermark__cover{
+  position:absolute;
+  top:0px;
+  left:0px;
+  height:200px;
+  width:300px;
+  background-color:white;
+  z-index:2;
+}
+
+.diagram{
+  position:relative;
+}
+
+
+.no-assigned__cards__container{
+  padding: 62px 0px 0px 20px;
+  height: 470px;
+  overflow: auto;
+  position:"relative";
+}
+
+.srd-diagram{
+  position:inherit;
+}
+
+.srd-link-layer{
+  background-color:darkgrey !important;
+}
+
 .App {
   text-align: center;
 }
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
+  height: 80px;
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+.steps-content {
+  margin-top: 16px;
+  border: 1px dashed #e9e9e9;
+  border-radius: 6px;
+  background-color: #fafafa;
+  min-height: 100px;
+  text-align: center;
+  padding-top: 10px;
+}
+
+.ant-steps-horizontal:not(.ant-steps-label-vertical) .ant-steps-item{
+  white-space: normal !important;
+}
+
+.ant-popover-placement-top{
+  top:240px !important;
+  left:10px !important;
+}
+
+.ant-popover-arrow{
+  display:none;
+}
+
+.ant-steps-item-description{
+  word-wrap: break-word;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.sendButtonContainer{
+  position: absolute !important;
+  right: 20px;
+  top: 64px;
+  width: 160px;
+  height: 100px;
+  z-index:1;
+  color:white;
+}
+
+.sendButton{
+  z-index: 1;
+}
+
+.example {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 79.3%;
+  height: 93%;
+  position: absolute;
+  z-index: 3;
+  text-align: center;
+  background: rgba(147, 169, 191, 0.81);
+  border-radius: 4px;  
+}
+
+.example-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 110%;
+  position: absolute;
+  z-index: 3;
+  text-align: center;
+  background: rgba(147, 169, 191, 0.81);
+  border-radius: 4px;  
+}
+
+span.ant-spin-dot.ant-spin-dot-spin{
+    width: 72px;
+    height: 72px;
 }
