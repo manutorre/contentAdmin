@@ -78,16 +78,6 @@ export default class GoJs extends Component {
     let that = this
     let model = goObj(go.TreeModel)
     let diagram = goObj(go.Diagram, this.refs.goJsDiv, {initialContentAlignment: go.Spot.Center});
-    // DOUBLE CLICK EVENT LISTENER
-    // diagram.addDiagramListener("ObjectDoubleClicked",  (ev) => {
-    //   console.log(ev); //Successfully logs the node you clicked.
-    //   console.log(ev.subject.part); //Successfully logs the node's name.
-    //   ev.diagram.model.addLinkData({from:ev.subject.part.key, to:ev.diagram.model.nodeDataArray[0].key})
-    //   console.log(ev.diagram.model.linkDataArray)
-    //   data.push(ev.subject.part.key)
-    //   console.log(data)
-    // });
-
     diagram.addDiagramListener("LinkDrawn", (ev) => {
       // console.log(diagram.model.toJson());
       let {links} = this.state
@@ -107,7 +97,7 @@ export default class GoJs extends Component {
     return primero[0]
   }
 
-  processContents(contents){
+  processContents(contents){ // por qué es necesario esto???
     let contenidos = []
     // let contenidos = contents
     contents.map((content)=> {
@@ -170,18 +160,6 @@ export default class GoJs extends Component {
       orderedNodes.push(lastNodo)
     }
     console.log(orderedNodes)
-    // this.processContents(orderedNodes)
-    // this.props.updateContents(orderedNodes)
-    // let contenidos = [] 
-    // this.state.links.map( (link, index) => {
-    //   if (index != this.state.links.length - 1) {
-    //     contenidos.push(this.state.contents.filter( contenido => contenido.titletext == link.from )[0])
-    //   }
-    // })
-    // contenidos.push(this.state.contents.filter(contenido => contenido.titletext == this.state.links[this.state.links.length - 1].from)[0])
-    // contenidos.push(this.state.contents.filter(contenido => contenido.titletext == this.state.links[this.state.links.length - 1].to)[0])
-    // return contenidos
-    // console.log(orderedNodes)
     return this.processContents(orderedNodes)
   }
 
@@ -221,9 +199,6 @@ export default class GoJs extends Component {
   
   onDiagramEnter(event){
     event.preventDefault();
-      // Here you could also set effects on the Diagram,
-      // such as changing the background color to indicate an acceptable drop zone
-      // Requirement in some browsers, such as Internet Explorer
   }
 
   getContentStructure(content1,content2,content3,content4, content5){ //crea el content object
