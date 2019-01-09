@@ -5,6 +5,7 @@ import LeftPanel from './LeftPanel'
 import Diagram from './Diagram'
 import go from 'gojs';
 import axios from 'axios'
+import ContentsManager from './classes/ContentsManager.js'
 
 export default class ContentAdmin extends React.Component{
 
@@ -14,16 +15,17 @@ export default class ContentAdmin extends React.Component{
       confirmedContents: [],
       editedContents: []
     }
+    this.contentsManager = new ContentsManager();
+    console.log(this.contentsManager)
   }
 
   componentWillMount(){
-    axios.get("https://alexa-apirest.herokuapp.com/users/noticesByState/new/gonza").then( (response) => {
-      response.data.length > 0 ? this.setState({confirmedContents:response.data}) : this.setState({confirmedContents:"No hay contenidos nuevos"})      
-      console.log(response)})
-      axios.get("https://alexa-apirest.herokuapp.com/users/noticesByState/edited/gonza").then( (response) => {
-        console.log(response)
-        response.data.length > 0 ? this.setState({editedContents:response.data}) : this.setState({editedContents:"No hay contenidos editados"})
-      })
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/Portada/gonza").then( (response) => {
+      if (response.data.length > 0) {
+        this.contentsManager.setContents(response.data);
+        this.setState({confirmedContents:response.data}) 
+      }  
+  })
   }
 
   render(){
@@ -37,14 +39,15 @@ export default class ContentAdmin extends React.Component{
           {this.state.confirmedContents.length > 0 && 
             <LeftPanel data={this.state.confirmedContents}/>
           }
-          {this.state.editedContents.length > 0 &&
+          {/* {this.state.editedContents.length > 0 &&
             <LeftPanel data={this.state.editedContents} edited/>
-          }
+          } */}
         </Sider>
         <Layout>
           <Header>Header</Header>
           <Content>
             <Diagram 
+              contentsManager={this.contentsManager}
               data={!typeof this.state.confirmedContents == "string" ? this.state.confirmedContents.map(
                 (content) => { return{key:content.url, color:go.Brush.randomColor()}}
               ) : []}

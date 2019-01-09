@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import go from 'gojs';
 import {Button, Spin, Modal, Input} from 'antd'
 import axios from 'axios'
+import Link from './classes/Link';
 const goObj = go.GraphObject.make;
 
 export default class GoJs extends Component {
@@ -29,10 +30,10 @@ export default class GoJs extends Component {
     this.renderCanvas = this.renderCanvas.bind(this)
     this.showSendDataModal = this.showSendDataModal.bind(this)
     this.onChangeInput = this.onChangeInput.bind(this)
-
   }
 
   componentDidMount () {
+    console.log(this.props.contentsManager)
     this.renderCanvas ();
   }
 
@@ -75,26 +76,18 @@ export default class GoJs extends Component {
 
 
   renderCanvas () {
-    let that = this
     let model = goObj(go.TreeModel)
     let diagram = goObj(go.Diagram, this.refs.goJsDiv, {initialContentAlignment: go.Spot.Center});
     diagram.addDiagramListener("LinkDrawn", (ev) => {
-      // console.log(diagram.model.toJson());
-      let {links} = this.state
-      links.push({from:ev.subject.fromNode.data.idContent, to: ev.subject.toNode.data.idContent})
-      this.setState({links})
-      // this.reorderNodes()
+      let newLink = new Link(ev.subject.fromNode.data.idContent, ev.subject.toNode.data.idContent)
+      this.props.contentsManager.addLink(newLink);
     })
     this.setModelAndDiagram(model, diagram)
   
   }
 
   primero(){
-    let primero = this.state.contents.filter((content) => {
-      if (this.state.links.filter((link) => link.to == content.idcontent).length == 0)
-        return true
-    })
-    return primero[0]
+    this.props.contentsManager.getFirstContent();
   }
 
   processContents(contents){ // por qué es necesario esto???
@@ -128,14 +121,14 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-    let contentsToSend = this.reorderNodes()
+    let contentsToSend = this.props.contentsManager.contentsOrderFromLinks()
     if (contentsToSend.length > 0) {
         this.setState({
           loading:true
         })
       axios.put('https://alexa-apirest.herokuapp.com/users/updateListContents/user/gonza', contentsToSend).then(() => {
         this.setState({loading:false,success:"success"})
-        this.state.myDiagram.div = null
+        this.state.myDiagram.div = null;
         this.renderCanvas()
       })
       .catch((error) => {
@@ -148,31 +141,31 @@ export default class GoJs extends Component {
     this.setState({modalVisible:false})
   }
 
-  reorderNodes(){
+  // reorderNodes(){
     
-    let primerNodo = this.primero()
-    let primerLink = this.state.links.filter( link => link.from == primerNodo.idcontent)
-    let orderedNodes = [primerNodo]
-    let lastNodo = primerNodo
-    for (let index = 0; index < this.state.links.length; index++) {
-      let properLink = this.state.links.filter( link => link.from == lastNodo.idcontent)[0]
-      lastNodo = this.state.contents.filter( content => content.idcontent == properLink.to)[0]
-      orderedNodes.push(lastNodo)
-    }
-    console.log(orderedNodes)
-    return this.processContents(orderedNodes)
-  }
+  //   let primerNodo = this.primero()
+  //   let primerLink = this.state.links.filter( link => link.from == primerNodo.idcontent)
+  //   let orderedNodes = [primerNodo]
+  //   let lastNodo = primerNodo
+  //   for (let index = 0; index < this.state.links.length; index++) {
+  //     let properLink = this.state.links.filter( link => link.from == lastNodo.idcontent)[0]
+  //     lastNodo = this.state.contents.filter( content => content.idcontent == properLink.to)[0]
+  //     orderedNodes.push(lastNodo)
+  //   }
+  //   console.log(orderedNodes)
+  //   return this.processContents(orderedNodes)
+  // }
 
 
   generateLinksArray(){
-    let linksArray = []
     this.props.data.map((content, index) => {
       if (index > 0) {
-        let newLink = {from:this.props.data[index - 1].key, to:content.key}
-        linksArray.push(newLink)
+        let newLink = new Link(this.props.data[index - 1].key, content.key)
+        this.props.contentsManager.addLink(newLink);
+        this.props.contentsManager.setContents(this.props.data);
       }
     })
-    return linksArray
+    return this.props.contentsManager.getLinks();
   }
 
   
@@ -186,7 +179,7 @@ export default class GoJs extends Component {
 
   setModelAndDiagram(model, diagram){
     model.nodeDataArray = this.props.data
-    let linksArray = this.generateLinksArray()
+    // let linksArray = this.generateLinksArray()
     diagram.model = new go.GraphLinksModel([],[]);
     diagram.nodeTemplate = this.generateNodeTemplate()
     diagram.linkTemplate = this.generateLinkTemplate()
@@ -201,13 +194,12 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  getContentStructure(content1,content2,content3,content4, content5){ //crea el content object
+  getContentStructure(content1,content2,content3,content4){ //crea el content object
     let parsedContent1 = JSON.parse(content1)
     let parsedContent2 = JSON.parse(content2)
     let parsedContent3 = JSON.parse(content3)
     let parsedContent4 = JSON.parse(content4)
-    let parsedContent5 = JSON.parse(content5)
-    let content = ({...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4,...parsedContent5})
+    let content = ({...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4})
     let contents = this.state.contents
     contents.push(content)
     this.setState({contents})
@@ -238,8 +230,7 @@ export default class GoJs extends Component {
         event.dataTransfer.items[0].type, 
         event.dataTransfer.items[1].type, 
         event.dataTransfer.items[2].type, 
-        event.dataTransfer.items[3].type,
-        event.dataTransfer.items[4].type),
+        event.dataTransfer.items[3].type),
         color:go.Brush.randomColor()
     });
     diagram.commitTransaction('new node');

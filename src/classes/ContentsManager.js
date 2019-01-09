@@ -1,8 +1,10 @@
+import { Link } from "gojs";
+
 export default class ContentsManager {
 
-  constructor(contents, links){
-    this.contents = contents; //array of Content class elements
-    this.links = links; //array of Link class elements
+  constructor(){
+    this.contents = []; //array of Content class elements
+    this.links = []; //array of Link class elements
   }
 
   getContents(){
@@ -19,6 +21,13 @@ export default class ContentsManager {
     
   setLinks(links){
     this.links = links
+  }
+
+  addLink(link){
+    /*
+      this adds a link
+    */
+    this.links.push(link);
   }
 
   getFirstContent(){
