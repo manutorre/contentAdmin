@@ -18,7 +18,7 @@
 
 
 .no-assigned__cards__container{
-  padding: 62px 0px 0px 20px;
+  padding: 62px 0px 0px 0px;
   height: 470px;
   overflow: auto;
   position:"relative";
@@ -131,4 +131,17 @@
 span.ant-spin-dot.ant-spin-dot-spin{
     width: 72px;
     height: 72px;
+}
+
+.ant-layout-sider{
+  width:300px !important;
+  max-width:300px !important;
+  min-width:300px !important;
+}
+
+.ant-tabs-bar{
+  background-color: #ffffff;
+  margin-top: 2px !important;
+  margin-bottom: 40px !important;
+  border-right: 1px solid;  
 }
