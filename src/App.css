@@ -145,3 +145,12 @@ span.ant-spin-dot.ant-spin-dot-spin{
   margin-bottom: 40px !important;
   border-right: 1px solid;  
 }
+
+.multicard-container{
+  cursor:grab;
+  position:relative;
+  height:95px;
+  width:50%;
+  margin:0 auto;
+  margin-bottom:45px;
+}

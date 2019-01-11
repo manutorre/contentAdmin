@@ -10,7 +10,7 @@ export default class MultiCard extends React.Component{
     const description = index === 2 ? (this.props.cantidad + " contenidos") : ""
     const styles = this.generateStyles(index)
     return(
-      <Card draggable key={index} style={styles}>
+      <Card key={index} style={styles}>
         <Meta title={title} description={description} />
       </Card>
     )
@@ -21,7 +21,7 @@ export default class MultiCard extends React.Component{
     const title = this.props.identificador;;
     const description = this.props.categoria;
     return(
-      <Card draggable style={{ width:"100%",border:"1px solid", margin:"0 auto" }}>
+      <Card style={{ width:"100%",border:"1px solid", margin:"0 auto" }}>
         <Meta title={title} description={description}/>
       </Card>
     )
@@ -40,10 +40,11 @@ export default class MultiCard extends React.Component{
       }   
     ) 
   }
+  
 
   render(){
     return(
-      <div style={{position:"relative", height:"115px", width:"50%", margin:"0 auto", marginBottom:"30px"}}>
+      <div draggable className="multicard-container">
         {this.props.cantidad > 1 ?
           [0,1,2].map((number,index) => 
             this.generateMultiCard(index)
