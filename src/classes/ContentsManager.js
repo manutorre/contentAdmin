@@ -5,6 +5,7 @@ export default class ContentsManager {
   constructor(){
     this.contents = []; //array of Content class elements
     this.links = []; //array of Link class elements
+    this.fluxes = []
   }
 
   getContents(){
@@ -13,6 +14,25 @@ export default class ContentsManager {
 
   setContents(contents){
     this.contents = contents
+  }
+
+  setFluxes(fluxes){
+    this.fluxes = fluxes
+  }
+
+  getFluxesNames(){
+    return this.fluxes.map( flux => flux._id)
+  }
+
+
+  getContentsForFlux(fluxId){
+    return this.fluxes.filter( flux => 
+      flux._id === fluxId
+    )[0].contenidos
+  }
+
+  getContentsForFluxOrdered(fluxId){
+    return this.getContentsForFlux(fluxId).sort((content1,content2) => {return content1.order - content2.order})
   }
 
   getLinks(){

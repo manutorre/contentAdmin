@@ -26,6 +26,17 @@ export default class MultiCard extends React.Component{
       </Card>
     )
   }
+  
+  generateFluxCard(){
+    const { Meta } = Card;
+    const title = this.props.identificador;
+    const description = "Flujo";
+    return(
+      <Card style={{ cursor:"pointer", width:"100%",border:"1px solid", margin:"0 auto" }}>
+        <Meta title={title} description={description}/>
+      </Card>
+    )
+  }
 
   generateStyles(index){
     return(
@@ -44,8 +55,11 @@ export default class MultiCard extends React.Component{
 
   render(){
     return(
-      <div draggable className="multicard-container">
-        {this.props.cantidad > 1 ?
+      <div onClick={this.props.onClick} draggable={!this.props.flux} className="multicard-container">
+        {this.props.flux ? 
+          this.generateFluxCard()
+        :
+        this.props.cantidad > 1 ?
           [0,1,2].map((number,index) => 
             this.generateMultiCard(index)
           )

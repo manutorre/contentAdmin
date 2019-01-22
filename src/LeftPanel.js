@@ -1,16 +1,8 @@
 import React from 'react'
 import MultiCard from "./MultiCard.js"
-import { Tabs, Button } from 'antd';
-
+import { Tabs } from 'antd';
+import FluxTab from './FluxTab.js';
 export default class LeftPanel extends React.Component {
-
-
-  constructor(props){
-    super(props)
-    this.state = {
-      idConjuntos:null
-    }
-  }
 
   onContentDragEnd(event,content){
     if(event.dataTransfer.dropEffect !== 'none'){
@@ -32,9 +24,13 @@ export default class LeftPanel extends React.Component {
       <div className="no-assigned__cards__container">
         <Tabs>
           <TabPane tab="Contenidos" key="1">
-            {this.props.data.map((datos) =>
+            {this.props.manager.getContents().map((datos) =>
               datos.contenidos.map( (content, index) => 
-                <div onDragStart={(e) => this.onContentDragStart(e,content)} key={index} onDragEnd={(e) => this.onContentDragEnd(e,content)}>
+                <div 
+                key={index} 
+                onDragStart={(e) => this.onContentDragStart(e,content)} 
+                onDragEnd={(e) => this.onContentDragEnd(e,content)}
+                >
                   <MultiCard  
                     identificador={content.identificador} 
                     categoria={content.categoria}
@@ -45,7 +41,7 @@ export default class LeftPanel extends React.Component {
             )}
           </TabPane>
           <TabPane tab="Flujos" key="2">
-            Content of tab 2
+              <FluxTab manager={this.props.manager}/>
           </TabPane>          
         </Tabs>
       </div>
