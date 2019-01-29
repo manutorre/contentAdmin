@@ -7,8 +7,22 @@ export default class FluxTab extends React.Component{
 
   constructor(props){
     super(props)
-    this.state = { modalVisible:[] }
+    this.state = { 
+      modalVisible:[],
+      fluxInDiagram:[]
+    }
   }
+
+  addFluxToDiagram(id){
+    this.props.addFluxToDiagram(id);
+    this.setState({
+      modalVisible:false,
+      fluxInDiagram:{
+        [id]:true
+      }
+    })
+  }
+
 
   renderModal(flux){
     return(
@@ -18,15 +32,21 @@ export default class FluxTab extends React.Component{
         visible={true}
         onCancel={() => this.setState({modalVisible:false})}
       >
-        {this.props.manager.getContentsForFluxOrdered(flux).map( (flux,i) => 
-          <div key={i}>{flux.identificador}</div>
+        {this.props.manager.getContentsForFluxOrdered(flux).map( (content,i) => 
+          <div key={i}>{content.identificador}</div>
         )}
-        <Button type="primary" onClick={() => console.log("boton")}>Editar</Button>
+        <Button 
+          type="primary" 
+          onClick={() => this.addFluxToDiagram(flux)}
+          disabled={this.state.fluxInDiagram[flux]}
+        >
+          Editar
+        </Button>
       </Modal>
     )
   }
 
-  showContents(flux,index){
+  showContents(index){
     this.setState({
       modalVisible:{
         [index]:true
@@ -37,14 +57,15 @@ export default class FluxTab extends React.Component{
   render(){
     return(
       <div>
-        {this.props.manager.getFluxesNames().map( (flux,i) =>
+        {this.props.manager.getFluxes().map( (flux,i) =>
           <div key={i}> 
-            {this.state.modalVisible[i] && this.renderModal(flux)}
+            {this.state.modalVisible[i] && this.renderModal(flux._id)}
             <MultiCard
-              onClick={() => this.showContents(flux,i)}
+              disabled={this.state.fluxInDiagram[flux._id]}
+              onClick={() => this.showContents(i)}
               flux={true}
               key={i}
-              identificador={flux} 
+              identificador={flux._id}
             />
           </div>
         )}

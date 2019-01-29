@@ -2,6 +2,13 @@ import React from 'react';
 import { Card } from 'antd';
 
 
+let fluxCard = { 
+  cursor:"pointer", 
+  width:"100%",
+  border:"1px solid", 
+  margin:"0 auto" 
+}
+
 export default class MultiCard extends React.Component{
 
   generateMultiCard(index){
@@ -32,9 +39,10 @@ export default class MultiCard extends React.Component{
     const title = this.props.identificador;
     const description = "Flujo";
     return(
-      <Card style={{ cursor:"pointer", width:"100%",border:"1px solid", margin:"0 auto" }}>
-        <Meta title={title} description={description}/>
-      </Card>
+        <Card 
+          style={fluxCard}>
+          <Meta title={title} description={description}/>
+        </Card>
     )
   }
 

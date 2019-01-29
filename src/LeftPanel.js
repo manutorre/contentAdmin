@@ -41,7 +41,10 @@ export default class LeftPanel extends React.Component {
             )}
           </TabPane>
           <TabPane tab="Flujos" key="2">
-              <FluxTab manager={this.props.manager}/>
+              <FluxTab 
+                manager={this.props.manager}
+                addFluxToDiagram={this.props.addFluxToDiagram}  
+              />
           </TabPane>          
         </Tabs>
       </div>

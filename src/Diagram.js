@@ -32,9 +32,18 @@ export default class GoJs extends Component {
     this.onChangeInput = this.onChangeInput.bind(this)
   }
 
+  componentWillReceiveProps(props){
+    if (props.shouldShowFlux || props.fluxId) {
+      console.log(this.props.fluxId)
+      this.addContentsManually(props.fluxId);
+    }
+  }
+
   componentDidMount () {
-    console.log(this.props.contentsManager)
     this.renderCanvas ();
+  }
+
+  componentDidUpdate(){
   }
 
   generateNodeTemplate(){
@@ -170,11 +179,11 @@ export default class GoJs extends Component {
 
   
   componentWillUpdate (prevProps) { //se actualiza sólo cuando cambia la data
-    if (this.props.data !== prevProps.data) {
-      const model = this.state.myModel
-      const diagram = this.state.myDiagram
-      this.setModelAndDiagram(model, diagram)
-    }
+    // if (this.props.data !== prevProps.data) {
+    //   const model = this.state.myModel
+    //   const diagram = this.state.myDiagram
+    //   this.setModelAndDiagram(model, diagram)
+    // }
   }
 
   setModelAndDiagram(model, diagram){
@@ -205,6 +214,25 @@ export default class GoJs extends Component {
     this.setState({contents})
     return content.idcontent
     }
+
+  addContentsManually(id){
+    let color = go.Brush.randomColor();
+    let fluxContents = this.props.contentsManager.getContentsForFlux(id) //contents manager gets all the contents for the flux
+    fluxContents.map( (content, i) => {
+      let diagram = this.state.myDiagram
+      let point = {x: i - 1, y: -116 }
+      diagram.model.addNodeData({
+        location:point,
+        idContent:id + " - " + content.identificador,
+        color:color}
+      )
+      diagram.commitTransaction('new node');
+      this.setState({
+        myDiagram:diagram,
+        myModel:diagram.model
+      })    
+    })
+  }
 
 
   onDiagramDrop(event){

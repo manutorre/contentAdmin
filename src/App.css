@@ -154,3 +154,7 @@ span.ant-spin-dot.ant-spin-dot-spin{
   margin:0 auto;
   margin-bottom:45px;
 }
+
+.disabledCard{
+  cursor:not-allowed !important;
+}

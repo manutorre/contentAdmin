@@ -31,6 +31,10 @@ export default class ContentsManager {
     )[0].contenidos
   }
 
+  getFluxes(){
+    return this.fluxes
+  }
+
   getContentsForFluxOrdered(fluxId){
     return this.getContentsForFlux(fluxId).sort((content1,content2) => {return content1.order - content2.order})
   }

@@ -13,13 +13,14 @@ export default class ContentAdmin extends React.Component{
     super(props)
     this.state = {
       contents: [],
-      fluxes: []
+      showFluxContent: false,
+      diagramFluxId: false
     }
     this.contentsManager = new ContentsManager();
-    console.log(this.contentsManager)
+    this.addFluxToDiagram = this.addFluxToDiagram.bind(this)
   }
 
-  componentWillMount(){
+  componentDidMount(){
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/Portada/gonza").then( (response) => {
       if (response.data.length > 0) {
         this.contentsManager.setContents(response.data);
@@ -34,6 +35,14 @@ export default class ContentAdmin extends React.Component{
   })    
   }
 
+  addFluxToDiagram(id){
+    console.log(id)
+    this.setState({
+      showFluxContent:true,
+      diagramFluxId: id
+    })
+  }
+
   render(){
 
     const {Header, Sider, Content} = Layout;
@@ -43,19 +52,21 @@ export default class ContentAdmin extends React.Component{
         <Layout style={{height:"1000px"}}>
         <Sider>
           {this.state.contents.length > 0 && 
-            <LeftPanel manager={this.contentsManager} />
+            <LeftPanel 
+              manager={this.contentsManager} 
+              addFluxToDiagram={this.addFluxToDiagram}
+              />
           }
         </Sider>
         <Layout>
           <Header>Header</Header>
           <Content>
-            <Diagram 
+            <Diagram
+              shouldShowFlux={this.state.showFluxContent}
               contentsManager={this.contentsManager}
-              data={!typeof this.state.contents == "string" ? this.state.contents.map(
-                (content) => { return{key:content.url, color:go.Brush.randomColor()}}
-              ) : []}
-              updateContents={ orderedContents => this.processContents(orderedContents)}
-              />
+              data={[]}
+              fluxId={this.state.diagramFluxId}
+            />
             </Content>
         </Layout>
         <Sider>
