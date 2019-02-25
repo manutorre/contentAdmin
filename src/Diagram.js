@@ -21,7 +21,8 @@ export default class GoJs extends Component {
       success:null,
       error:null,
       modalVisible:false,
-      inputValue:null
+      inputValue:null,
+      showSend:false
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
     this.onDiagramDrop = this.onDiagramDrop.bind(this)
@@ -35,6 +36,7 @@ export default class GoJs extends Component {
   componentWillReceiveProps(props){
     if (props.shouldShowFlux || props.fluxId) {
       console.log(this.props.fluxId)
+      this.setState({showSend:true})
       this.addContentsManually(props.fluxId);
     }
   }
@@ -130,23 +132,39 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-    let contentsToSend = this.props.contentsManager.contentsOrderFromLinks()
-    if (contentsToSend.length > 0) {
-        this.setState({
+    let contents = this.props.contentsManager.contentsOrderFromLinks()
+    this.setState({
           loading:true
         })
-      axios.put('https://alexa-apirest.herokuapp.com/users/updateListContents/user/gonza', contentsToSend).then(() => {
-        this.setState({loading:false,success:"success"})
-        this.state.myDiagram.div = null;
-        this.renderCanvas()
-      })
-      .catch((error) => {
-        error.response && error.response.data ? 
-        this.setState({loading:false,error:error.response.data})
-        :
-        console.log(error)
-      })
-    }
+        var contentsId = contents.map((content)=>{
+          return content.contenidos[0].identificador
+        })
+        let contentsToSend = {nombreConjunto:this.state.inputValue, contents:contentsId}
+        if(this.state.showSend){
+          axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
+            this.setState({loading:false,success:"success",showSend:false})
+            this.state.myDiagram.div = null;
+            this.renderCanvas()
+          })
+          .catch((error) => {
+            error.response && error.response.data ? 
+            this.setState({loading:false,error:error.response.data})
+            :
+            console.log(error)
+          })
+        }else{
+          axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend).then(() => {
+            this.setState({loading:false,success:"success"})
+            this.state.myDiagram.div = null;
+            this.renderCanvas()
+          })
+          .catch((error) => {
+            error.response && error.response.data ? 
+            this.setState({loading:false,error:error.response.data})
+            :
+            console.log(error)
+          })
+        }
     this.setState({modalVisible:false})
   }
 
@@ -264,7 +282,8 @@ export default class GoJs extends Component {
     diagram.commitTransaction('new node');
     this.setState({
       myDiagram:diagram,
-      myModel:diagram.model
+      myModel:diagram.model,
+      showSend:true
     })
     // console.log(diagram.model.toJson());
     // remove dragged element from its old location
@@ -296,21 +315,21 @@ export default class GoJs extends Component {
               'backgroundColor': "white"
             }}>
           </div>
-          <div className="watermark__cover">
+          <div  className="watermark__cover">
           </div>
         </div>
         <div className="sendButtonContainer">
-          {this.state.success && <div>Los contenidos se han enviado correctamente</div>}
-          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0}>Enviar contenidos</Button>
+          {this.state.success && <div>The contents were sending correctly</div>}
+          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 || this.state.showSend === false}>Send contents</Button>
           {this.state.error && <div>{this.state.error}</div>}
       </div>
         <Modal
-          title="Confirme su acción"
+          title="Confirm your action"
           visible={this.state.modalVisible}
           onOk={this.sendData}
           onCancel={() => this.setState({modalVisible:false})}>
             <div>
-              Por favor, ingrese un nombre para el conjunto de contenidos a enviar
+              Please, enter a name for the set of contents to send
               <Input style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}/>
             </div>
         </Modal>

@@ -56,20 +56,20 @@ export default class ContentsManager {
 
   getFirstContent(){
     return this.contents.filter( content => {
-      return this.links.filter( link => link.destination === content.idContent).length === 0
+      return this.links.filter( link => link.destination === content.contenidos[0].identificador).length === 0
     })[0];
   }
 
   getFirstLink(){
-    return this.links.filter( link => link.origin === this.getFirstContent().idcontent)[0]
+    return this.links.filter( link => link.origin === this.getFirstContent().contenidos[0].identificador)[0]
   }
 
   getLinkWithOrigin(content){
-    return this.links.filter(link => link.origin === content)[0]
+    return this.links.filter(link => link.origin === content.contenidos[0].identificador)[0]
   }
 
   getContentById(contentId){
-    return this.contents.filter(content => content.idContent === contentId)[0]
+    return this.contents.filter(content => content.contenidos[0].identificador === contentId)[0]
   }
 
   contentsOrderFromLinks(){

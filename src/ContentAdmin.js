@@ -21,7 +21,7 @@ export default class ContentAdmin extends React.Component{
   }
 
   componentDidMount(){
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/Portada/gonza").then( (response) => {
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/Lead Story/gonza").then( (response) => {
       if (response.data.length > 0) {
         this.contentsManager.setContents(response.data);
         this.setState({contents:response.data}) 

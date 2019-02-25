@@ -23,7 +23,7 @@ export default class LeftPanel extends React.Component {
     return(
       <div className="no-assigned__cards__container">
         <Tabs>
-          <TabPane tab="Contenidos" key="1">
+          <TabPane tab="Contents" key="1">
             {this.props.manager.getContents().map((datos) =>
               datos.contenidos.map( (content, index) => 
                 <div 
@@ -40,7 +40,7 @@ export default class LeftPanel extends React.Component {
               )
             )}
           </TabPane>
-          <TabPane tab="Flujos" key="2">
+          <TabPane tab="Fluxs" key="2">
               <FluxTab 
                 manager={this.props.manager}
                 addFluxToDiagram={this.props.addFluxToDiagram}  
