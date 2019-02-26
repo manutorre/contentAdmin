@@ -14,14 +14,21 @@ export default class ContentAdmin extends React.Component{
     this.state = {
       contents: [],
       showFluxContent: false,
-      diagramFluxId: false
+      diagramFluxId: false,
+      categories: []
     }
     this.contentsManager = new ContentsManager();
     this.addFluxToDiagram = this.addFluxToDiagram.bind(this)
   }
 
   componentDidMount(){
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/Lead Story/gonza").then( (response) => {
+    axios.get("https://alexa-apirest.herokuapp.com/users/categories/gonza").then( (response) => {
+      if (response.data.length > 0) {
+        this.setState({categories:response.data}) 
+      }  
+    });
+
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByFirstCategory/gonza").then( (response) => {
       if (response.data.length > 0) {
         this.contentsManager.setContents(response.data);
         this.setState({contents:response.data}) 
@@ -55,6 +62,7 @@ export default class ContentAdmin extends React.Component{
             <LeftPanel 
               manager={this.contentsManager} 
               addFluxToDiagram={this.addFluxToDiagram}
+              categories={this.state.categories}
               />
           }
         </Sider>
