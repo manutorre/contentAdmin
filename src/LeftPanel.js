@@ -1,34 +1,28 @@
 import React from 'react'
 import MultiCard from "./MultiCard.js"
-import { Tabs, Select, Layout, Menu, Breadcrumb, Icon } from 'antd';
+import { Tabs, Select } from 'antd';
 import FluxTab from './FluxTab.js';
 import axios from 'axios'
 
-const {
-  Header, Content, Footer, Sider,
-} = Layout;
-const SubMenu = Menu.SubMenu;
 
 export default class LeftPanel extends React.Component {
   constructor(props){
       super(props)
       this.state = {
-        selectedItem:"",
-        collapsed:false
+        selectedItem:""
       }
   }
 
-  onCollapse = (collapsed) => {
-    console.log(collapsed);
-    this.setState({ collapsed });
-  }
-
-  handleClick = (value) => {
-    console.log("category",value)
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value.key+"/gonza").then( (response) => {
+  selectCategory(value){
+    console.log(value)
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value+"/gonza")
+    .then( (response) => {
       if (response.data.length > 0) {
         this.props.manager.setContents(response.data);
-      }  
+      }
+      this.setState({
+        selectedItem:value
+      })  
     });
   }
 
@@ -47,39 +41,53 @@ export default class LeftPanel extends React.Component {
     // let dragged = event.target;
   }
 
+  generateStyles(index){
+    return(
+      {
+        position:"relative",
+        width:"80%",
+        //height:"95px",
+        border:"1px solid",
+        margin:"0 auto",
+        //bottom:"40px",
+        top:"5px"
+      }   
+    ) 
+  }
+
   render(){
     const TabPane = Tabs.TabPane;
     const {Option} = Select
+    const styles = this.generateStyles()
+
     return(
       <div className="no-assigned__cards__container">
         <Tabs>
           <TabPane tab="Contents" key="1">
-          <Layout style={{ minHeight: '100vh' }}>
-              <Sider
-                collapsible
-                collapsed={this.state.collapsed}
-                onCollapse={this.onCollapse}
-              >
-              {this.props.categories.length > 0 &&
-                <div>
-                <Menu theme="dark" defaultSelectedKeys={['0']} mode="inline" onClick={this.handleClick} >  
-                  <SubMenu
-                    key="sub1"
-                    title={<span><Icon type="tags" /><span>Categories</span></span>}
-                  >
-                    {this.props.categories.map( (category, index) => {
-                      return(
-                        <Menu.Item key={category}> {category} </Menu.Item>
+            {this.props.categories.length > 0 &&
+              <div>
+              <h3 style={{color:"white",left:"10px"}}> Filter by category </h3>
+              <Select value={this.state.selectedItem? this.state.selectedItem : undefined}  placeholder="Category" 
+                  onChange={(e) =>this.selectCategory(e)} style={styles}>
+                  
+                  {this.props.categories.map( (category, index) => {
+                    return(
+                        <Option 
+                          key={index} 
+                          value={category.toString()}>
+                            {category.toString()}
+                        </Option>
                         )
-                      })
-                    } 
-                  </SubMenu>
-                </Menu>
-                </div>
-              }
+                    })
+                  }
+              </Select>
               <br/>
-
-              {this.props.manager.getContents().map((datos) =>
+              <br/>
+              <br/>
+              </div>
+            }
+            
+            {this.props.manager.getContents().map((datos) =>
               datos.contenidos.map( (content, index) => 
                 <div 
                 key={index} 
@@ -94,8 +102,6 @@ export default class LeftPanel extends React.Component {
                 </div>
               )
             )}
-              </Sider>        
-            </Layout>
           </TabPane>
           <TabPane tab="Fluxs" key="2">
               <FluxTab 
