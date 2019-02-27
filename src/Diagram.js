@@ -22,7 +22,8 @@ export default class GoJs extends Component {
       error:null,
       modalVisible:false,
       inputValue:null,
-      showSend:false
+      showSend:false,
+      addedContentsIds:[]
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
     this.onDiagramDrop = this.onDiagramDrop.bind(this)
@@ -233,22 +234,38 @@ export default class GoJs extends Component {
     return content.idcontent
     }
 
+  isNotInDiagram(content){
+    let alreadyAdded = this.state.addedContentsIds;
+    let flag = false;
+    let isAlreadyInDiagram = this.state.addedContentsIds.filter( id => JSON.stringify(content.contentId) == JSON.stringify(id)).length > 0
+    if (!isAlreadyInDiagram) {
+      alreadyAdded.push(content.contentId)
+      flag = true
+      this.setState({
+        addedContentsIds:alreadyAdded
+      })
+    }
+    return flag;
+  }
+
   addContentsManually(id){
     let color = go.Brush.randomColor();
     let fluxContents = this.props.contentsManager.getContentsForFlux(id) //contents manager gets all the contents for the flux
     fluxContents.map( (content, i) => {
-      let diagram = this.state.myDiagram
-      let point = {x: i - 1, y: -116 }
-      diagram.model.addNodeData({
-        location:point,
-        idContent:id + " - " + content.identificador,
-        color:color}
-      )
-      diagram.commitTransaction('new node');
-      this.setState({
-        myDiagram:diagram,
-        myModel:diagram.model
-      })    
+      if (this.isNotInDiagram(content)) {
+        let diagram = this.state.myDiagram
+        let point = {x: i - 1, y: -116 }
+        diagram.model.addNodeData({
+          location:point,
+          idContent:id + " - " + content.identificador,
+          color:color}
+        )
+        diagram.commitTransaction('new node');
+        this.setState({
+          myDiagram:diagram,
+          myModel:diagram.model
+        })
+      }    
     })
   }
 
