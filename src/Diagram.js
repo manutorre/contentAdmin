@@ -36,7 +36,7 @@ export default class GoJs extends Component {
   componentWillReceiveProps(props){
     if (props.shouldShowFlux || props.fluxId) {
       console.log(this.props.fluxId)
-      this.setState({showSend:true})
+      //this.setState({showSend:true})
       this.addContentsManually(props.fluxId);
     }
   }
@@ -283,7 +283,7 @@ export default class GoJs extends Component {
     this.setState({
       myDiagram:diagram,
       myModel:diagram.model,
-      showSend:true
+      //showSend:true
     })
     // console.log(diagram.model.toJson());
     // remove dragged element from its old location
@@ -320,7 +320,7 @@ export default class GoJs extends Component {
         </div>
         <div className="sendButtonContainer">
           {this.state.success && <div>The contents were sending correctly</div>}
-          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 || this.state.showSend === false}>Send contents</Button>
+          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 }>Send contents</Button>
           {this.state.error && <div>{this.state.error}</div>}
       </div>
         <Modal
