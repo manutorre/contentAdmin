@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import go from 'gojs';
-import {Button, Spin, Modal, Input} from 'antd'
+import {Button, Spin, Modal, Input, Select, Collapse, Icon} from 'antd'
 import axios from 'axios'
 import Link from './classes/Link';
 const goObj = go.GraphObject.make;
@@ -22,7 +22,13 @@ export default class GoJs extends Component {
       error:null,
       modalVisible:false,
       inputValue:null,
-      showSend:false
+      showSend:false,
+      pattern:null,
+      index:null,
+      patterns:["Read only titles","Read introduction and content","Read paragraph to paragraph"],
+      infoPatterns:["Only the titles of the contents defined in the flow will be read continuously."
+      ,"The titles of the defined contents will be read one at a time, giving the possibility to choose to read an introduction and then the rest of the content."
+      ,"The body of the contents will be read paragraph by paragraph."]
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
     this.onDiagramDrop = this.onDiagramDrop.bind(this)
@@ -45,7 +51,22 @@ export default class GoJs extends Component {
     this.renderCanvas ();
   }
 
-  componentDidUpdate(){
+  handlePattern(pattern){
+    console.log(pattern)
+    var index;
+    switch(pattern){
+      case "Read only titles":
+        index = 0
+      break;
+      case "Read introduction and content":
+        index = 1
+      break;
+      case "Read paragraph to paragraph":
+        index = 2
+      break;
+    }
+
+    this.setState({pattern,index})
   }
 
   generateNodeTemplate(){
@@ -101,7 +122,7 @@ export default class GoJs extends Component {
     this.props.contentsManager.getFirstContent();
   }
 
-  processContents(contents){ // por qué es necesario esto???
+  /*processContents(contents){ // por qué es necesario esto???
     let contenidos = []
     // let contenidos = contents
     contents.map((content)=> {
@@ -122,6 +143,7 @@ export default class GoJs extends Component {
     })
     return contenidos
   }
+  */
 
   onChangeInput(e){
     this.setState({inputValue:e.target.value})
@@ -221,12 +243,11 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  getContentStructure(content1,content2,content3,content4){ //crea el content object
+  getContentStructure(content1,content2){ //crea el content object
     let parsedContent1 = JSON.parse(content1)
     let parsedContent2 = JSON.parse(content2)
-    let parsedContent3 = JSON.parse(content3)
-    let parsedContent4 = JSON.parse(content4)
-    let content = ({...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4})
+
+    let content = ({...parsedContent1,...parsedContent2})
     let contents = this.state.contents
     contents.push(content)
     this.setState({contents})
@@ -274,10 +295,8 @@ export default class GoJs extends Component {
       location: point,
       idContent: this.getContentStructure(
         event.dataTransfer.items[0].type, 
-        event.dataTransfer.items[1].type, 
-        event.dataTransfer.items[2].type, 
-        event.dataTransfer.items[3].type),
-        color:go.Brush.randomColor()
+        event.dataTransfer.items[1].type),
+      color:go.Brush.randomColor()
     });
     diagram.commitTransaction('new node');
     this.setState({
@@ -296,7 +315,19 @@ export default class GoJs extends Component {
   }
   
   render () {
+    const {Option} = Select
+    const Panel = Collapse.Panel;
+    const customPanelStyle = {
+      background: '#f7f7f7',
+      borderRadius: 4,
+      marginBottom: 24,
+      border: 0,
+      overflow: 'hidden',
+      marginTop:"20px"
+    };
+
     return(
+      
       <div>
         {this.state.loading && 
           <div className="example">
@@ -320,7 +351,7 @@ export default class GoJs extends Component {
         </div>
         <div className="sendButtonContainer">
           {this.state.success && <div>The contents were sending correctly</div>}
-          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 }>Send contents</Button>
+          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 }> Deploy to skill </Button>
           {this.state.error && <div>{this.state.error}</div>}
       </div>
         <Modal
@@ -330,7 +361,31 @@ export default class GoJs extends Component {
           onCancel={() => this.setState({modalVisible:false})}>
             <div>
               Please, enter a name for the set of contents to send
-              <Input style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}/>
+              <Input style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}>
+              </Input> 
+              <p> Select a content reading pattern </p>
+              
+              <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" 
+            onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
+              {this.state.patterns.map( (pattern, index) => {
+                return(
+                  <Option 
+                    key={index}   
+                    value={pattern}>
+                      {pattern}
+                  </Option>
+                )
+              })}
+              </Select>
+              { this.state.pattern &&
+              <Collapse bordered={false} defaultActiveKey={['1']}
+              expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>} 
+              >                
+                  <Panel header={this.state.pattern} key="1" style={customPanelStyle}>
+                    <p style={{ paddingLeft: 24 }}> {this.state.infoPatterns[this.state.index]} </p>
+                  </Panel>
+              </Collapse>
+              }
             </div>
         </Modal>
       </div>

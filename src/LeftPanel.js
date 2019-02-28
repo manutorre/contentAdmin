@@ -35,9 +35,7 @@ export default class LeftPanel extends React.Component {
 
   onContentDragStart(event,content){
     event.dataTransfer.setData(JSON.stringify({idContent:content.identificador}), 'idContent');
-    event.dataTransfer.setData(JSON.stringify({category:content.categoria}), 'category');
-    event.dataTransfer.setData(JSON.stringify({url:"cielosports.com"}), 'url');
-    event.dataTransfer.setData(JSON.stringify({xpath:"asdsad"}), 'xpath');    
+    event.dataTransfer.setData(JSON.stringify({category:content.categoria}), 'category');    
     // let dragged = event.target;
   }
 
@@ -98,6 +96,7 @@ export default class LeftPanel extends React.Component {
                     identificador={content.identificador} 
                     categoria={content.categoria}
                     cantidad={content.siblingsId ? content.siblingsId.length : null}
+                    notAvailable={ (index == 0 && content.siblingsId) ? (content.siblingsId.length == 1 ? true : false) : false } 
                   />
                 </div>
               )
