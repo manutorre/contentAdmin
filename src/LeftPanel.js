@@ -86,7 +86,7 @@ export default class LeftPanel extends React.Component {
             }
             
             {this.props.manager.getContents().map((datos) =>
-              datos.contenidos.map( (content, index) => 
+              datos.contenidos.map( (content,index) => 
                 <div 
                 key={index} 
                 onDragStart={(e) => this.onContentDragStart(e,content)} 
@@ -96,7 +96,7 @@ export default class LeftPanel extends React.Component {
                     identificador={content.identificador} 
                     categoria={content.categoria}
                     cantidad={content.siblingsId ? content.siblingsId.length : null}
-                    notAvailable={ (index == 0 && content.siblingsId) ? (content.siblingsId.length == 1 ? true : false) : false } 
+                    notAvailable={  content.contentId == "5c77f8ea7d79580004d4f3d2" ? true : false } 
                   />
                 </div>
               )

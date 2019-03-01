@@ -27,7 +27,7 @@ export default class MultiCard extends React.Component{
     const { Meta } = Card;
     const title = this.props.identificador;
     const description = this.props.categoria;
-    const isNotAvailable = this.props.notAvailable
+    var isNotAvailable = this.props.notAvailable
     return(
       (isNotAvailable) ?
       <Card style={{ width:"100%",border:"1px solid", margin:"0 auto", backgroundColor: "red" }}>

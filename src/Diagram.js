@@ -330,6 +330,7 @@ export default class GoJs extends Component {
     event.stopPropagation();
     event.preventDefault();
   }
+
   
   render () {
     const {Option} = Select
@@ -342,6 +343,7 @@ export default class GoJs extends Component {
       overflow: 'hidden',
       marginTop:"20px"
     };
+
 
     return(
       
@@ -366,10 +368,15 @@ export default class GoJs extends Component {
           <div  className="watermark__cover">
           </div>
         </div>
+
         <div className="sendButtonContainer">
-          {this.state.success && <div>The contents were sending correctly</div>}
+          {this.state.success && 
+            <div>The contents were sending correctly</div>
+          }
           <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 }> Deploy to skill </Button>
-          {this.state.error && <div>{this.state.error}</div>}
+          {this.state.error && 
+            <div>{this.state.error}</div>
+          }
       </div>
         <Modal
           title="Confirm your action"
