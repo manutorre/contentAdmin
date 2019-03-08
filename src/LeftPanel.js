@@ -9,7 +9,8 @@ export default class LeftPanel extends React.Component {
   constructor(props){
       super(props)
       this.state = {
-        selectedItem:""
+        selectedItem:"",
+        hiddenCards:[]
       }
   }
 
@@ -18,7 +19,11 @@ export default class LeftPanel extends React.Component {
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value+"/gonza")
     .then( (response) => {
       if (response.data.length > 0) {
-        this.props.manager.setContents(response.data);
+            let contents = response.data
+            let contentsFilter = contents.filter((elem)=> !this.state.hiddenCards.includes(elem.contenidos[0].identificador) )
+            //let index = contentsFilter.indexOf(this.props.manager.getContentById(idContent))
+            //contents = contentsFilter.splice(index,1)
+            this.props.manager.setContents(contentsFilter);
       }
       this.setState({
         selectedItem:value
@@ -26,9 +31,19 @@ export default class LeftPanel extends React.Component {
     });
   }
 
-  onContentDragEnd(event,content){
+  onContentDragEnd(event,content){ //NO SE COMO HACER PARA OCULTAR EL DIV QUE ARRASTRO Y NO OCULTAR EL DIV DE LA OTRA CATEGORIA
     if(event.dataTransfer.dropEffect !== 'none'){
-      event.target.style.display = "none"
+      //event.target.parentNode.style.display = "none"
+      var hiddenCards = this.state.hiddenCards
+      hiddenCards.push(content.identificador)
+      this.setState({
+        hiddenCards: hiddenCards
+      })
+      
+      if(this.state.selectedItem != "") 
+        this.selectCategory(this.state.selectedItem) //Si todavia no asigno categoria, mandar la que es por defecto
+      else 
+        this.selectCategory("Main stories") //Mandar la primera
     } 
   }
 
@@ -87,7 +102,7 @@ export default class LeftPanel extends React.Component {
             
             {this.props.manager.getContents().map((datos) =>
               datos.contenidos.map( (content,index) => 
-                <div 
+                <div
                 key={index} 
                 onDragStart={(e) => this.onContentDragStart(e,content)} 
                 onDragEnd={(e) => this.onContentDragEnd(e,content)}

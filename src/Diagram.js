@@ -155,9 +155,14 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-    let contents = this.props.contentsManager.contentsOrderFromLinks()
-    this.setState({
-          loading:true
+    axios.get('https://alexa-apirest.herokuapp.com/users/admin/getContents/gonza')
+    .then((response) => {
+      if (response.data.length > 0) {
+    
+        this.props.contentsManager.setContents(response.data)
+        let contents = this.props.contentsManager.contentsOrderFromLinks()
+        this.setState({
+            loading:true
         })
         var contentsId = contents.map((content)=>{
           return content.contenidos[0].identificador
@@ -188,6 +193,8 @@ export default class GoJs extends Component {
             console.log(error)
           })
         }
+      }
+    })
     this.setState({modalVisible:false})
   }
 

@@ -56,7 +56,7 @@ export default class ContentsManager {
 
   getFirstContent(){
     return this.contents.filter( content => {
-      return this.links.filter( link => link.destination === content.contenidos[0].identificador).length === 0
+      return this.links.filter( link => link.destination === content.contenidos[0].identificador).length === 0 //Es necesaria hacer esta comparacion?
     })[0];
   }
 

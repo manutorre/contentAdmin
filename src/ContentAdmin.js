@@ -54,6 +54,14 @@ export default class ContentAdmin extends React.Component{
       diagramFluxId: id
     })
   }
+
+  /*hideNode(idContent){ //
+    let contents = this.contentsManager.getContents()
+    let index = this.contentsManager.indexOf(contentsManager.getContentById(idContent))
+    contents = contents.splice(index,1)
+    this.contentsManager.setContents(contents)    
+  }*/
+
   onChangeRadio(e){
     console.log('radio checked', e.target.value);
     this.setState({
