@@ -40,10 +40,15 @@ export default class LeftPanel extends React.Component {
         hiddenCards: hiddenCards
       })
       
-      if(this.state.selectedItem != "") 
+      if(this.state.selectedItem != ""){ 
         this.selectCategory(this.state.selectedItem) //Si todavia no asigno categoria, mandar la que es por defecto
-      else 
-        this.selectCategory("Main stories") //Mandar la primera
+      }
+      else{ //Mandar la primera
+        if(this.props.categories.length > 0)
+          this.selectCategory(this.props.categories[0]) 
+        else
+          this.selectCategory(axios.get("https://alexa-apirest.herokuapp.com/users/getFirstCategory/gonza")) 
+      } 
     } 
   }
 

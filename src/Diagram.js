@@ -172,7 +172,6 @@ export default class GoJs extends Component {
           axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
             this.setState({loading:false,success:"success",showSend:false})
             this.state.myDiagram.div = null;
-            this.renderCanvas()
           })
           .catch((error) => {
             error.response && error.response.data ? 
@@ -184,7 +183,6 @@ export default class GoJs extends Component {
           axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend).then(() => {
             this.setState({loading:false,success:"success"})
             this.state.myDiagram.div = null;
-            this.renderCanvas()
           })
           .catch((error) => {
             error.response && error.response.data ? 
@@ -342,13 +340,13 @@ export default class GoJs extends Component {
   }
 
   success = () => {
-    message.success('A new flow was created!', 5 , function(){
+    message.success('A new flow was created!', 3 , function(){
       window.location.reload()
     });   
   };
 
   error = () => {
-    message.error('An error occurred when trying to create a new flow', 4);
+    message.error('An error occurred when trying to create a new flow', 3);
   };
   
   render () {
