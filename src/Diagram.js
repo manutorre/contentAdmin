@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import go from 'gojs';
-import {Button, Spin, Modal, Input, Select, Collapse, Icon} from 'antd'
+import {Button, Spin, Modal, Input, Select, Collapse, Icon, message} from 'antd'
 import axios from 'axios'
 import Link from './classes/Link';
 const goObj = go.GraphObject.make;
@@ -167,7 +167,7 @@ export default class GoJs extends Component {
         var contentsId = contents.map((content)=>{
           return content.contenidos[0].identificador
         })
-        let contentsToSend = {nombreConjunto:this.state.inputValue, contents:contentsId}
+        let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contentsId}
         if(this.state.showSend){
           axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
             this.setState({loading:false,success:"success",showSend:false})
@@ -195,7 +195,10 @@ export default class GoJs extends Component {
         }
       }
     })
-    this.setState({modalVisible:false})
+    this.setState({
+      modalVisible:false,
+
+    })
   }
 
   // reorderNodes(){
@@ -338,6 +341,15 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
+  success = () => {
+    message.success('A new flow was created!', 5 , function(){
+      window.location.reload()
+    });   
+  };
+
+  error = () => {
+    message.error('An error occurred when trying to create a new flow', 4);
+  };
   
   render () {
     const {Option} = Select
@@ -377,13 +389,11 @@ export default class GoJs extends Component {
         </div>
 
         <div className="sendButtonContainer">
-          {this.state.success && 
-            <div>The contents were sending correctly</div>
-          }
+          {(this.state.success)? this.success() : null }
+
           <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 }> Deploy to skill </Button>
-          {this.state.error && 
-            <div>{this.state.error}</div>
-          }
+          
+          {(this.state.error)? this.error() : null}
       </div>
         <Modal
           title="Confirm your action"
