@@ -54,31 +54,27 @@ export default class ContentsManager {
     this.links.push(link);
   }
 
-  getFirstContent(){
-    return this.contents.filter( content => {
-      return this.links.filter( link => link.destination === (content.contenidos[0].identificador).toLowerCase()).length === 0 //Es necesaria hacer esta comparacion?
+  getFirstContent(contents){
+    return contents.filter( content => {
+      return this.links.filter( link => link.destination === content.idcontent.toLowerCase()).length === 0 //Es necesaria hacer esta comparacion?
     })[0];
   }
 
-  getFirstLink(){
-    return this.links.filter( link => link.origin === (this.getFirstContent().contenidos[0].identificador).toLowerCase())[0]
-  }
-
   getLinkWithOrigin(content){
-    return this.links.filter(link => link.origin === (content.contenidos[0].identificador).toLowerCase())[0]
+    return this.links.filter(link => link.origin === content.idcontent.toLowerCase())[0]
   }
 
-  getContentById(contentId){
-    return this.contents.filter(content => (content.contenidos[0].identificador).toLowerCase() === contentId)[0]
+  getContentById(contentId, contents){
+    return contents.filter(content => content.idcontent.toLowerCase() === contentId)[0]
   }
 
-  contentsOrderFromLinks(){
-    let firstContent = this.getFirstContent();
+  contentsOrderFromLinks(contents){
+    let firstContent = this.getFirstContent(contents);
     let nextContent = firstContent;
     let orderedContents = [firstContent]
     this.links.map( link => {
       let auxLink = this.getLinkWithOrigin(nextContent);
-      nextContent = this.getContentById(auxLink.destination);
+      nextContent = this.getContentById(auxLink.destination, contents);
       orderedContents.push(nextContent);
     })
     return orderedContents;

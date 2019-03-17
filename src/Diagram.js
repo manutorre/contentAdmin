@@ -11,7 +11,6 @@ export default class GoJs extends Component {
     super (props);
     this.renderCanvas = this.renderCanvas.bind (this);
     this.state = {
-      orderedNodes: [],
       contents:[],
       links:[],
       myModel: null, 
@@ -160,12 +159,12 @@ export default class GoJs extends Component {
       if (response.data.length > 0) {
     
         this.props.contentsManager.setContents(response.data)
-        let contents = this.props.contentsManager.contentsOrderFromLinks()
+        let contents = this.props.contentsManager.contentsOrderFromLinks(this.state.contents)
         this.setState({
             loading:true
         })
         var contentsId = contents.map((content)=>{
-          return content.contenidos[0].identificador
+          return content.idcontent
         })
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contentsId}
         if(this.state.showSend){
