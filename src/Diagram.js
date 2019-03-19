@@ -154,6 +154,7 @@ export default class GoJs extends Component {
   }
 
   sendData(){
+        this.props.contentsManager.setContents(this.state.contents)
 
         let contents = this.props.contentsManager.contentsOrderFromLinks()
         this.setState({
