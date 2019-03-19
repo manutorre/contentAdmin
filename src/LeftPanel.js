@@ -31,7 +31,7 @@ export default class LeftPanel extends React.Component {
     });
   }
 
-  onContentDragEnd(event,content){ //NO SE COMO HACER PARA OCULTAR EL DIV QUE ARRASTRO Y NO OCULTAR EL DIV DE LA OTRA CATEGORIA
+  onContentDragEnd(event,content){ 
     if(event.dataTransfer.dropEffect !== 'none'){
       //event.target.parentNode.style.display = "none"
       var hiddenCards = this.state.hiddenCards

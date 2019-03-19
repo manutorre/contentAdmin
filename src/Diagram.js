@@ -155,17 +155,21 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-    axios.get('https://alexa-apirest.herokuapp.com/users/admin/getContents/gonza')
-    .then((response) => {
-      if (response.data.length > 0) {
-    
-        this.props.contentsManager.setContents(response.data)
+        this.props.contentsManager.setContents(this.state.contents)
         let contents = this.props.contentsManager.contentsOrderFromLinks()
         this.setState({
             loading:true
         })
+
+        axios.get('https://alexa-apirest.herokuapp.com/users/admin/getContents/gonza')
+        .then((response) => {
+          if (response.data.length > 0) {
+            this.props.contentsManager.setContents(response.data)
+          }
+        })
+
         var contentsId = contents.map((content)=>{
-          return content.contenidos[0].identificador
+          return content.idcontent
         })
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contentsId}
         if(this.state.showSend){
@@ -191,11 +195,10 @@ export default class GoJs extends Component {
             console.log(error)
           })
         }
-      }
-    })
+      //}
+    //})
     this.setState({
       modalVisible:false,
-
     })
   }
 
@@ -326,7 +329,7 @@ export default class GoJs extends Component {
     diagram.commitTransaction('new node');
     this.setState({
       myDiagram:diagram,
-      myModel:diagram.model,
+      myModel:diagram.model      
       //showSend:true
     })
     // console.log(diagram.model.toJson());
