@@ -65,35 +65,26 @@ export default class ContentsManager {
     return this.links.filter( link => link.origin === (this.getFirstContent().icContent).toLowerCase())[0]
   }
 
-  getLinkWithOrigin(content){
-    return this.links.filter(link => link.origin === (content.idcontent).toLowerCase())[0]
-  }
+
 
   getContentById(contentId){
-    return this.contents.filter(content => (content.idcontent).toLowerCase() === contentId)[0]
+    return this.contents.filter(content => content.idcontent.toLowerCase() === contentId)[0]
 
-  getFirstContent(contents){
-    return contents.filter( content => {
-      return this.links.filter( link => link.destination === content.idcontent.toLowerCase()).length === 0 //Es necesaria hacer esta comparacion?
-    })[0];
-  }
+
 
   getLinkWithOrigin(content){
     return this.links.filter(link => link.origin === content.idcontent.toLowerCase())[0]
   }
 
-  getContentById(contentId, contents){
-    return contents.filter(content => content.idcontent.toLowerCase() === contentId)[0]
 
-  }
 
   contentsOrderFromLinks(contents){
-    let firstContent = this.getFirstContent(contents);
+    let firstContent = this.getFirstContent();
     let nextContent = firstContent;
     let orderedContents = [firstContent]
     this.links.map( link => {
       let auxLink = this.getLinkWithOrigin(nextContent);
-      nextContent = this.getContentById(auxLink.destination, contents);
+      nextContent = this.getContentById(auxLink.destination);
       orderedContents.push(nextContent);
     })
     return orderedContents;

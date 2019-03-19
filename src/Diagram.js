@@ -155,20 +155,10 @@ export default class GoJs extends Component {
 
   sendData(){
 
-        this.props.contentsManager.setContents(this.state.contents)
         let contents = this.props.contentsManager.contentsOrderFromLinks()
-
-    axios.get('https://alexa-apirest.herokuapp.com/users/admin/getContents/gonza')
-    .then((response) => {
-      if (response.data.length > 0) {
-    
-        this.props.contentsManager.setContents(response.data)
-        let contents = this.props.contentsManager.contentsOrderFromLinks(this.state.contents)
-
         this.setState({
             loading:true
         })
-
         axios.get('https://alexa-apirest.herokuapp.com/users/admin/getContents/gonza')
         .then((response) => {
           if (response.data.length > 0) {
