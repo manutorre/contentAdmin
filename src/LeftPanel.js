@@ -116,7 +116,7 @@ export default class LeftPanel extends React.Component {
                     identificador={content.identificador} 
                     categoria={content.categoria}
                     cantidad={content.siblingsId ? content.siblingsId.length : null}
-                    notAvailable={  content.contentId == "5c77f8ea7d79580004d4f3d2" ? true : false } 
+                    available={content.available} 
                   />
                 </div>
               )

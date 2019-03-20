@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import go from 'gojs';
-import {Button, Spin, Modal, Input, Select, Collapse, Icon, message} from 'antd'
+import {Button, Spin, Modal, Input, Select, Collapse, Icon, message,Checkbox, Radio} from 'antd'
 import axios from 'axios'
 import Link from './classes/Link';
 const goObj = go.GraphObject.make;
@@ -11,6 +11,11 @@ export default class GoJs extends Component {
     super (props);
     this.renderCanvas = this.renderCanvas.bind (this);
     this.state = {
+      valueRadioLink:null,
+      valueRadioNode:null,
+      valueCheck:false,
+      modalLinkVisible:true,
+      modalNodeVisible:true,
       contents:[],
       links:[],
       myModel: null, 
@@ -25,10 +30,10 @@ export default class GoJs extends Component {
       pattern:null,
       index:null,
       addedContentsIds:[],
-      patterns:["Read only titles","Read introduction and content","Read paragraph to paragraph"],
+      patterns:["Read only titles","Read introduction and content"],//,"Read paragraph to paragraph"
       infoPatterns:["Only the titles of the contents defined in the flow will be read continuously."
       ,"The titles of the defined contents will be read one at a time, giving the possibility to choose to read an introduction and then the rest of the content."
-      ,"The body of the contents will be read paragraph by paragraph."]
+      ] //,"The body of the contents will be read paragraph by paragraph."
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
     this.onDiagramDrop = this.onDiagramDrop.bind(this)
@@ -351,6 +356,40 @@ export default class GoJs extends Component {
     message.error('An error occurred when trying to create a new flow', 3);
   };
   
+  onChangeRadioLink = (e) =>{
+    console.log('radio checked link', e.target.value);
+    this.setState({
+      valueRadioLink:e.target.value
+    })
+  }
+  
+  onChangeRadioNode = (e) =>{
+    console.log('radio checked node', e.target.value);
+    this.setState({
+      valueRadioNode:e.target.value
+    })
+  }
+
+  onChangeCheckNode = (checkedValue) => {
+    console.log('checked node = ', checkedValue);
+  }
+  onChangeCheckLink = (checkedValue) => {
+    this.setState({
+      valueCheck:checkedValue.target.checked
+    })
+    console.log('checked link = ', checkedValue);
+  }
+
+  confirmNodeModal = () =>{
+    //Asociar nodo con info del modal: meter en un array toda la info de los nodos, cada uno con un identificador del nodo
+    console.log("Data del nodo")
+  }
+
+  confirmLinkModal = () =>{
+    //Asociar link con info del modal: meter en un array toda la info de los links, cada uno con un id del link
+    console.log("Data del link")
+  }
+
   render () {
     const {Option} = Select
     const Panel = Collapse.Panel;
@@ -362,7 +401,13 @@ export default class GoJs extends Component {
       overflow: 'hidden',
       marginTop:"20px"
     };
-
+    
+    const RadioGroup = Radio.Group;
+    const radioStyle = {
+      display: 'block',
+      height: '30px',
+      lineHeight: '30px',
+    };
 
     return(
       
@@ -395,6 +440,47 @@ export default class GoJs extends Component {
           
           {(this.state.error)? this.error() : null}
       </div>
+      <div>
+          <Modal
+            title="Node"
+            centered = {true}
+            visible={this.state.modalNodeVisible}
+            onOk={this.confirmNodeModal}
+            onCancel={() => this.setState({modalNodeVisible:false})}>
+            <div>
+              <p>Reading:</p>
+              <Checkbox onChange={this.onChangeCheckNode}>
+                   'Ask for browse'
+              </Checkbox>
+              <br></br>
+              <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
+                <Radio style={radioStyle} value={1}>Only title</Radio>
+                <Radio style={radioStyle} value={2}>Title,introduction and content</Radio>
+              </RadioGroup>
+            </div>             
+          </Modal>
+      </div>
+      <div>
+          <Modal
+            title="Link"
+            visible={this.state.modalLinkVisible}
+            onOk={this.confirmLinkModal}
+            onCancel={() => this.setState({modalLinkVisible:false})}>
+            <div>
+              <p>How to continue?</p>
+              <Checkbox onChange={this.onChangeCheckLink}>
+                  Read text previosly
+                  {this.state.valueCheck === true ? <Input placeholder="Insert text" style={{ width: 100, marginLeft: 10 }} /> : null}
+              </Checkbox>
+              <br></br>
+              <RadioGroup onChange={this.onChangeRadio} value={this.state.valueRadioLink}>
+                <Radio style={radioStyle} value={1}>Read the next content directly</Radio>
+                <Radio style={radioStyle} value={2}>Ask for reading next</Radio>
+              </RadioGroup>
+            </div>
+          </Modal>
+      </div>
+
         <Modal
           title="Confirm your action"
           visible={this.state.modalVisible}
