@@ -14,8 +14,8 @@ export default class GoJs extends Component {
       valueRadioLink:null,
       valueRadioNode:null,
       valueCheck:false,
-      modalLinkVisible:true,
-      modalNodeVisible:true,
+      modalLinkVisible:false,
+      modalNodeVisible:false,
       contents:[],
       links:[],
       myModel: null, 
@@ -42,6 +42,8 @@ export default class GoJs extends Component {
     this.renderCanvas = this.renderCanvas.bind(this)
     this.showSendDataModal = this.showSendDataModal.bind(this)
     this.onChangeInput = this.onChangeInput.bind(this)
+    this.generateNodeTemplate = this.generateNodeTemplate.bind(this)
+    this.generateLinkTemplate= this.generateLinkTemplate.bind(this)
   }
 
   componentWillReceiveProps(props){
@@ -75,9 +77,21 @@ export default class GoJs extends Component {
   }
 
   generateNodeTemplate(){
+    var handlerThis = this;
     let nodeTemplate = goObj(
       go.Node,
      "Auto",
+      {
+        doubleClick: function(e, node) {
+            // node is the Node that was double-clicked
+            var data = node.data;
+            console.log("Fired Double click!!! ",node.data)
+            handlerThis.setState({
+              modalNodeVisible:true
+            })
+
+        }
+      },
       new go.Binding('location'),
       goObj(
         go.Shape, "RoundedRectangle",
@@ -101,8 +115,20 @@ export default class GoJs extends Component {
   }
 
   generateLinkTemplate(){
+    var handlerThis = this;
     let linkTemplate = goObj(go.Link,
       { curve: go.Link.Bezier },
+      {
+        doubleClick: function(e, link) {
+            // node is the Node that was double-clicked
+            var data = link.data;
+            console.log("Fired Double click!!! ",link.data)
+            handlerThis.setState({
+              modalLinkVisible:true
+            })
+
+        }
+      },
       {relinkableFrom: true, relinkableTo: true},
       goObj(go.Shape),  // the link shape
       goObj(go.Shape,   // the arrowhead
@@ -473,7 +499,7 @@ export default class GoJs extends Component {
                   {this.state.valueCheck === true ? <Input placeholder="Insert text" style={{ width: 100, marginLeft: 10 }} /> : null}
               </Checkbox>
               <br></br>
-              <RadioGroup onChange={this.onChangeRadio} value={this.state.valueRadioLink}>
+              <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
                 <Radio style={radioStyle} value={1}>Read the next content directly</Radio>
                 <Radio style={radioStyle} value={2}>Ask for reading next</Radio>
               </RadioGroup>
