@@ -57,21 +57,21 @@ export default class ContentsManager {
 
   getFirstContent(){
     return this.contents.filter( content => {
-      return this.links.filter( link => link.destination === content.idcontent.toLowerCase()).length === 0 //Es necesaria hacer esta comparacion?
+      return this.links.filter( link => link.destination === content.identificador.toLowerCase()).length === 0 
     })[0];
   }
 
   getFirstLink(){
-    return this.links.filter( link => link.origin === (this.getFirstContent().idcontent).toLowerCase())[0]
+    return this.links.filter( link => link.origin === (this.getFirstContent().identificador).toLowerCase())[0]
   }
 
 
   getContentById(contentId){
-    return this.contents.filter(content => content.idcontent.toLowerCase() === contentId)[0]
+    return this.contents.filter(content => content.identificador.toLowerCase() === contentId)[0]
   }
 
   getLinkWithOrigin(content){
-    return this.links.filter(link => link.origin === content.idcontent.toLowerCase())[0]
+    return this.links.filter(link => link.origin === content.identificador.toLowerCase())[0]
   }
 
 

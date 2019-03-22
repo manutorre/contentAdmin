@@ -54,8 +54,10 @@ export default class LeftPanel extends React.Component {
 
 
   onContentDragStart(event,content){
-    event.dataTransfer.setData(JSON.stringify({idContent:content.identificador}), 'idContent');
-    event.dataTransfer.setData(JSON.stringify({category:content.categoria}), 'category');    
+    event.dataTransfer.setData(JSON.stringify({idContent:content.contentId}), 'idContent');
+    event.dataTransfer.setData(JSON.stringify({identificador:content.identificador}), 'identificador');
+    event.dataTransfer.setData(JSON.stringify({category:content.categoria}), 'category');
+    event.dataTransfer.setData(JSON.stringify({category:content.navegable}), 'isNavegable');      
     // let dragged = event.target;
   }
 

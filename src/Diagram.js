@@ -11,6 +11,8 @@ export default class GoJs extends Component {
     super (props);
     this.renderCanvas = this.renderCanvas.bind (this);
     this.state = {
+      temporaryContent:null,
+      temporaryLink:null,
       valueRadioLink:null,
       valueRadioNode:null,
       valueCheck:false,
@@ -26,6 +28,7 @@ export default class GoJs extends Component {
       error:null,
       modalVisible:false,
       inputValue:null,
+      inputValueText:null,
       showSend:false,
       pattern:null,
       index:null,
@@ -84,12 +87,16 @@ export default class GoJs extends Component {
       {
         doubleClick: function(e, node) {
             // node is the Node that was double-clicked
-            var data = node.data;
-            console.log("Fired Double click!!! ",node.data)
+            let data = node.data;
+            console.log("Fired Double click!!! ",data)
+            let identificador = data.identificador
+            /*if(!data.isNavegable)
+				disableRadioButton title,intro and content
+            */ 
             handlerThis.setState({
-              modalNodeVisible:true
+              modalNodeVisible:true,
+              temporaryContent:identificador
             })
-
         }
       },
       new go.Binding('location'),
@@ -108,7 +115,7 @@ export default class GoJs extends Component {
       goObj(
         go.TextBlock,
         { margin: 6, font: "18px sans-serif" },
-        new go.Binding("text", "idContent")
+        new go.Binding("text", "identificador")
       )
     )
     return nodeTemplate;    
@@ -121,12 +128,13 @@ export default class GoJs extends Component {
       {
         doubleClick: function(e, link) {
             // node is the Node that was double-clicked
-            var data = link.data;
-            console.log("Fired Double click!!! ",link.data)
-            handlerThis.setState({
-              modalLinkVisible:true
-            })
+            let identificador = link.toNode.data.identificador;
+            console.log("Fired Double click!!! ",identificador)
 
+            handlerThis.setState({
+              modalLinkVisible:true,
+              temporaryLink:identificador
+            })
         }
       },
       {relinkableFrom: true, relinkableTo: true},
@@ -142,7 +150,7 @@ export default class GoJs extends Component {
     let model = goObj(go.TreeModel)
     let diagram = goObj(go.Diagram, this.refs.goJsDiv, {initialContentAlignment: go.Spot.Center});
     diagram.addDiagramListener("LinkDrawn", (ev) => {
-      let newLink = new Link(ev.subject.fromNode.data.idContent, ev.subject.toNode.data.idContent)
+      let newLink = new Link(ev.subject.fromNode.data.identificador, ev.subject.toNode.data.identificador)
       this.props.contentsManager.addLink(newLink);
     })
     this.setModelAndDiagram(model, diagram)
@@ -176,10 +184,6 @@ export default class GoJs extends Component {
   }
   */
 
-  onChangeInput(e){
-    this.setState({inputValue:e.target.value})
-  }
-
   showSendDataModal(){
     this.setState({modalVisible:true})
   }
@@ -198,10 +202,10 @@ export default class GoJs extends Component {
           }
         })
 
-        var contentsId = contents.map((content)=>{
+        /*var contentsId = contents.map((content)=>{
           return content.idcontent
-        })
-        let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contentsId}
+        })*/
+        let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
         if(this.state.showSend){
           axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
             this.setState({loading:false,success:"success",showSend:false})
@@ -285,15 +289,17 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  getContentStructure(content1,content2){ //crea el content object
-    let parsedContent1 = JSON.parse(content1)
-    let parsedContent2 = JSON.parse(content2)
+  getContentStructure(property1,property2,property3,property4){ //crea el content object
+    let parsedContent1 = JSON.parse(property1)
+    let parsedContent2 = JSON.parse(property2)
+    let parsedContent3 = JSON.parse(property3)
+    let parsedContent4 = JSON.parse(property4)
 
-    let content = ({...parsedContent1,...parsedContent2})
+    let content = ({...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4})
     let contents = this.state.contents
     contents.push(content)
     this.setState({contents})
-    return content.idcontent
+    return content.identificador
     }
 
   isNotInDiagram(content){
@@ -351,9 +357,11 @@ export default class GoJs extends Component {
     diagram.startTransaction('new node');
     diagram.model.addNodeData({
       location: point,
-      idContent: this.getContentStructure(
-        event.dataTransfer.items[0].type, 
-        event.dataTransfer.items[1].type),
+      identificador: this.getContentStructure(
+        event.dataTransfer.items[0].type,  //idContent 
+        event.dataTransfer.items[1].type,   //identificador
+        event.dataTransfer.items[2].type, //categoria
+      	event.dataTransfer.items[3].type), //isNavegable
       color:go.Brush.randomColor()
     });
     diagram.commitTransaction('new node');
@@ -382,6 +390,14 @@ export default class GoJs extends Component {
     message.error('An error occurred when trying to create a new flow', 3);
   };
   
+  onChangeInput(e){
+    this.setState({inputValue:e.target.value})
+  }
+
+  onChangeInputText = (e) =>{
+    this.setState({inputValueText:e.target.value})
+  }
+
   onChangeRadioLink = (e) =>{
     console.log('radio checked link', e.target.value);
     this.setState({
@@ -408,12 +424,55 @@ export default class GoJs extends Component {
 
   confirmNodeModal = () =>{
     //Asociar nodo con info del modal: meter en un array toda la info de los nodos, cada uno con un identificador del nodo
-    console.log("Data del nodo")
+    let contentNode = this.state.temporaryContent //idContent del nodo
+    let contents = this.state.contents
+    let indice = null 
+    this.state.contents.map((cont,index)=>{
+      if(cont.identificador == contentNode)
+        indice = index
+    })
+    console.log("Confirm node modal ",contentNode,indice,contents)
+    if(contents[indice].data) 
+    	contents[indice].data.read = this.state.valueRadioNode
+    else
+    	contents[indice].data = {"read":this.state.valueRadioNode}
+
+    this.setState({
+      modalNodeVisible:false,
+      contents:contents,
+      temporaryContent:null,
+      valueRadioNode:null
+    })
   }
 
   confirmLinkModal = () =>{
     //Asociar link con info del modal: meter en un array toda la info de los links, cada uno con un id del link
-    console.log("Data del link")
+    let contentNode = this.state.temporaryLink //link.destination
+    let contents = this.state.contents
+    let indice = null 
+    this.state.contents.map((cont,index)=>{
+      if(cont.identificador == contentNode)
+        indice = index
+    })
+    console.log("Confirm link modal ",contentNode,indice,contents)
+
+    if(contents[indice].data){ 
+    	contents[indice].data.metainfo = this.state.inputValueText
+    	contents[indice].data.next = this.state.valueRadioLink
+    }
+    else{
+    	contents[indice].data = {
+    		"metainfo":this.state.inputValueText, 
+    		"next":this.state.valueRadioLink
+    	}
+    }
+
+    this.setState({
+      modalLinkVisible:false,
+      inputValueText:null,
+      contents:contents,
+      temporaryLink:null
+  	})
   }
 
   render () {
@@ -472,7 +531,7 @@ export default class GoJs extends Component {
             centered = {true}
             visible={this.state.modalNodeVisible}
             onOk={this.confirmNodeModal}
-            onCancel={() => this.setState({modalNodeVisible:false})}>
+            onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
             <div>
               <p>Reading:</p>
               <Checkbox onChange={this.onChangeCheckNode}>
@@ -480,8 +539,8 @@ export default class GoJs extends Component {
               </Checkbox>
               <br></br>
               <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
-                <Radio style={radioStyle} value={1}>Only title</Radio>
-                <Radio style={radioStyle} value={2}>Title,introduction and content</Radio>
+                <Radio style={radioStyle} value={"Title"}>Only title</Radio>
+                <Radio style={radioStyle} value={"All"}>Title,introduction and content</Radio>
               </RadioGroup>
             </div>             
           </Modal>
@@ -496,12 +555,12 @@ export default class GoJs extends Component {
               <p>How to continue?</p>
               <Checkbox onChange={this.onChangeCheckLink}>
                   Read text previosly
-                  {this.state.valueCheck === true ? <Input placeholder="Insert text" style={{ width: 100, marginLeft: 10 }} /> : null}
+                  {this.state.valueCheck === true ? <Input placeholder="Insert text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
               </Checkbox>
               <br></br>
               <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
-                <Radio style={radioStyle} value={1}>Read the next content directly</Radio>
-                <Radio style={radioStyle} value={2}>Ask for reading next</Radio>
+                <Radio style={radioStyle} value={"Read Directly"}>Read the next content directly</Radio>
+                <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
               </RadioGroup>
             </div>
           </Modal>
