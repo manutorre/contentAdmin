@@ -559,7 +559,7 @@ export default class GoJs extends Component {
               </Checkbox>
               <br></br>
               <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
-                <Radio style={radioStyle} value={"Read Directly"}>Read the next content directly</Radio>
+                <Radio style={radioStyle} value={"Read directly"}>Read the next content directly</Radio>
                 <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
               </RadioGroup>
             </div>
@@ -576,7 +576,6 @@ export default class GoJs extends Component {
               <Input style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}>
               </Input> 
               <p> Select a content reading pattern </p>
-              
               <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" 
             onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
               {this.state.patterns.map( (pattern, index) => {
