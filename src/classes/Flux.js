@@ -1,8 +1,9 @@
 export default class Flux {
 
-  constructor(name, contents){
+  constructor(name, contents, links){
     this.name = name;
-    this.contents = contents
+    this.contents = contents;
+    this.links = links
   }
 
   getContents(){

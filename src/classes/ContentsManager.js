@@ -1,4 +1,5 @@
 import { Link } from "gojs";
+import Flux from './Flux.js'
 
 export default class ContentsManager {
 
@@ -17,17 +18,19 @@ export default class ContentsManager {
   }
 
   setFluxes(fluxes){
-    this.fluxes = fluxes
+    let fluxesArray = [];
+    fluxes.forEach(flux => { fluxesArray.push(new Flux(flux._id, flux.contenidos))  });
+    this.fluxes = fluxesArray
   }
 
   getFluxesNames(){
-    return this.fluxes.map( flux => flux._id)
+    return this.fluxes.map( flux => flux.name)
   }
 
   getContentsForFlux(fluxId){
     return this.fluxes.filter( flux => 
-      flux._id === fluxId
-    )[0].contenidos
+      flux.name === fluxId
+    )[0].contents
   }
 
   getFluxes(){

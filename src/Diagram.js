@@ -300,9 +300,10 @@ export default class GoJs extends Component {
       if (this.isNotInDiagram(content)) {
         let diagram = this.state.myDiagram
         let point = {x: i - 1, y: -116 }
+        console.log(content)
         diagram.model.addNodeData({
           location:point,
-          idContent:id + " - " + content.identificador,
+          identificador:id + " - " + content.identificador,
           color:color}
         )
         diagram.commitTransaction('new node');
