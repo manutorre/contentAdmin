@@ -294,7 +294,6 @@ export default class GoJs extends Component {
   }
 
   addContentsManually(id){
-    let color = go.Brush.randomColor();
     let fluxContents = this.props.contentsManager.getContentsForFlux(id) //contents manager gets all the contents for the flux
     fluxContents.map( (content, i) => {
       if (this.isNotInDiagram(content)) {
@@ -304,7 +303,7 @@ export default class GoJs extends Component {
         diagram.model.addNodeData({
           location:point,
           identificador:id + " - " + content.identificador,
-          color:color}
+          color:go.Brush.randomColor()}
         )
         diagram.commitTransaction('new node');
         this.setState({
