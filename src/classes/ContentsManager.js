@@ -24,7 +24,6 @@ export default class ContentsManager {
     return this.fluxes.map( flux => flux._id)
   }
 
-
   getContentsForFlux(fluxId){
     return this.fluxes.filter( flux => 
       flux._id === fluxId
@@ -48,12 +47,8 @@ export default class ContentsManager {
   }
 
   addLink(link){
-    /*
-      this adds a link
-    */
     this.links.push(link);
   }
-
 
   getFirstContent(){
     return this.contents.filter( content => {
@@ -65,7 +60,6 @@ export default class ContentsManager {
     return this.links.filter( link => link.origin === (this.getFirstContent().identificador).toLowerCase())[0]
   }
 
-
   getContentById(contentId){
     return this.contents.filter(content => content.identificador.toLowerCase() === contentId)[0]
   }
@@ -74,9 +68,7 @@ export default class ContentsManager {
     return this.links.filter(link => link.origin === content.identificador.toLowerCase())[0]
   }
 
-
-
-  contentsOrderFromLinks(){
+  getOrderedContents(){
     let firstContent = this.getFirstContent();
     let nextContent = firstContent;
     let orderedContents = [firstContent]

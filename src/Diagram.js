@@ -191,7 +191,7 @@ export default class GoJs extends Component {
   sendData(){
         this.props.contentsManager.setContents(this.state.contents)
 
-        let contents = this.props.contentsManager.contentsOrderFromLinks()
+        let contents = this.props.contentsManager.getOrderedContents()
         this.setState({
             loading:true
         })
@@ -236,21 +236,6 @@ export default class GoJs extends Component {
     })
   }
 
-  // reorderNodes(){
-    
-  //   let primerNodo = this.primero()
-  //   let primerLink = this.state.links.filter( link => link.from == primerNodo.idcontent)
-  //   let orderedNodes = [primerNodo]
-  //   let lastNodo = primerNodo
-  //   for (let index = 0; index < this.state.links.length; index++) {
-  //     let properLink = this.state.links.filter( link => link.from == lastNodo.idcontent)[0]
-  //     lastNodo = this.state.contents.filter( content => content.idcontent == properLink.to)[0]
-  //     orderedNodes.push(lastNodo)
-  //   }
-  //   console.log(orderedNodes)
-  //   return this.processContents(orderedNodes)
-  // }
-
 
   generateLinksArray(){
     this.props.data.map((content, index) => {
@@ -264,14 +249,6 @@ export default class GoJs extends Component {
   }
 
   
-  componentWillUpdate (prevProps) { //se actualiza sólo cuando cambia la data
-    // if (this.props.data !== prevProps.data) {
-    //   const model = this.state.myModel
-    //   const diagram = this.state.myDiagram
-    //   this.setModelAndDiagram(model, diagram)
-    // }
-  }
-
   setModelAndDiagram(model, diagram){
     model.nodeDataArray = this.props.data
     // let linksArray = this.generateLinksArray()
