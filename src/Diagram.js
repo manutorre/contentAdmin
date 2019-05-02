@@ -90,9 +90,6 @@ export default class GoJs extends Component {
             let data = node.data;
             console.log("Fired Double click!!! ",data)
             let identificador = data.identificador
-            /*if(!data.isNavegable)
-				disableRadioButton title,intro and content
-            */ 
             handlerThis.setState({
               modalNodeVisible:true,
               temporaryContent:identificador
@@ -190,7 +187,7 @@ export default class GoJs extends Component {
 
   sendData(){
         this.props.contentsManager.setContents(this.state.contents)
-
+        debugger
         let contents = this.props.contentsManager.getOrderedContents()
         this.setState({
             loading:true
@@ -293,24 +290,33 @@ export default class GoJs extends Component {
     return flag;
   }
 
-  addContentsManually(id){
-    let fluxContents = this.props.contentsManager.getContentsForFlux(id) //contents manager gets all the contents for the flux
-    fluxContents.map( (content, i) => {
+  addContentsManually(flux){
+    let diagram = this.state.myDiagram
+    let contents = this.state.contents
+    flux.getOrderedContents().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
-        let diagram = this.state.myDiagram
-        let point = {x: i - 1, y: -116 }
-        console.log(content)
+        contents.push(content)
+        let point = {x: i, y: 0 }
         diagram.model.addNodeData({
+          key:flux.name + " - " + content.identificador,
           location:point,
-          identificador:id + " - " + content.identificador,
+          identificador:flux.name + " - " + content.identificador,
           color:go.Brush.randomColor()}
         )
-        diagram.commitTransaction('new node');
-        this.setState({
-          myDiagram:diagram,
-          myModel:diagram.model
-        })
       }    
+    })
+    flux.getOrderedLinks().map(link => {
+      diagram.model.addLinkDataCollection([{
+        from:flux.name + " - " + link.origin,
+        to:flux.name + " - " + link.destination
+      }])
+      diagram.commitTransaction('linkDrawn');
+    })
+    this.setState({
+      contents,
+      myDiagram:diagram,
+      myModel:diagram.model,
+      inputValue:flux.name
     })
   }
 
@@ -431,8 +437,6 @@ export default class GoJs extends Component {
       if(cont.identificador == contentNode)
         indice = index
     })
-    console.log("Confirm link modal ",contentNode,indice,contents)
-
     if(contents[indice].data){ 
     	contents[indice].data.metainfo = this.state.inputValueText
     	contents[indice].data.next = this.state.valueRadioLink
@@ -550,7 +554,7 @@ export default class GoJs extends Component {
           onCancel={() => this.setState({modalVisible:false})}>
             <div>
               Please, enter a name for the set of contents to send
-              <Input style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}>
+              <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}>
               </Input> 
               <p> Select a content reading pattern </p>
               <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" 

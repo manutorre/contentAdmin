@@ -27,12 +27,12 @@ export default class FluxTab extends React.Component{
   renderModal(flux){
     return(
       <Modal
-        key={flux}
-        title={"Contents of flux - " + flux}
+        key={flux.name}
+        title={"Contents of flux - " + flux.name}
         visible={true}
         onCancel={() => this.setState({modalVisible:false})}
       >
-        {this.props.manager.getContentsForFluxOrdered(flux).map( (content,i) => 
+        {flux.getOrderedContents().map( (content,i) => 
           <div key={i}>{content.identificador}</div>
         )}
         <Button 
@@ -59,7 +59,7 @@ export default class FluxTab extends React.Component{
       <div>
         {this.props.manager.getFluxes().map( (flux,i) =>
           <div key={i}> 
-            {this.state.modalVisible[i] && this.renderModal(flux.name)}
+            {this.state.modalVisible[i] && this.renderModal(flux)}
             <MultiCard
               disabled={this.state.fluxInDiagram[flux.name]}
               onClick={() => this.showContents(i)}
