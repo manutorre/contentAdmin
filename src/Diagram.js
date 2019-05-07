@@ -51,7 +51,6 @@ export default class GoJs extends Component {
 
   componentWillReceiveProps(props){
     if (props.shouldShowFlux || props.fluxId) {
-      console.log(this.props.fluxId)
       //this.setState({showSend:true})
       this.addContentsManually(props.fluxId);
     }
@@ -62,7 +61,6 @@ export default class GoJs extends Component {
   }
 
   handlePattern(pattern){
-    console.log(pattern)
     var index;
     switch(pattern){
       case "Read only titles":
@@ -147,8 +145,15 @@ export default class GoJs extends Component {
     let model = goObj(go.TreeModel)
     let diagram = goObj(go.Diagram, this.refs.goJsDiv, {initialContentAlignment: go.Spot.Center});
     diagram.addDiagramListener("LinkDrawn", (ev) => {
-      let newLink = new Link(ev.subject.fromNode.data.identificador, ev.subject.toNode.data.identificador)
+      debugger
+      let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
       this.props.contentsManager.addLink(newLink);
+    })
+    diagram.addDiagramListener("LinkRelinked", (ev) => {
+      console.log(ev.parameter)
+      this.props.contentsManager.removeLinkWithOrigin(ev.parameter.from)
+      let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
+      this.props.contentsManager.addLink(newLink);      
     })
     this.setModelAndDiagram(model, diagram)
   
@@ -157,29 +162,6 @@ export default class GoJs extends Component {
   primero(){
     this.props.contentsManager.getFirstContent();
   }
-
-  /*processContents(contents){ // por qué es necesario esto???
-    let contenidos = []
-    // let contenidos = contents
-    contents.map((content)=> {
-      if (typeof content !== "undefined"){
-        let contentCopy = Object.assign({},content)
-        let idContent = contentCopy.idcontent
-        delete contentCopy.idcontent
-        contentCopy.idContent = idContent
-        contentCopy.state = "edited"
-        contentCopy.idConjunto = this.state.inputValue
-        contenidos.push(contentCopy)
-        console.log(contentCopy)
-      }
-    })
-    console.log(contenidos)
-    this.setState({
-      contentsToSend:contenidos
-    })
-    return contenidos
-  }
-  */
 
   showSendDataModal(){
     this.setState({modalVisible:true})
@@ -198,10 +180,6 @@ export default class GoJs extends Component {
             this.props.contentsManager.setContents(response.data)
           }
         })
-
-        /*var contentsId = contents.map((content)=>{
-          return content.idcontent
-        })*/
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
         if(this.state.showSend){
           axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
@@ -232,23 +210,9 @@ export default class GoJs extends Component {
       modalVisible:false,
     })
   }
-
-
-  generateLinksArray(){
-    this.props.data.map((content, index) => {
-      if (index > 0) {
-        let newLink = new Link(this.props.data[index - 1].key, content.key)
-        this.props.contentsManager.addLink(newLink);
-        this.props.contentsManager.setContents(this.props.data);
-      }
-    })
-    return this.props.contentsManager.getLinks();
-  }
-
   
   setModelAndDiagram(model, diagram){
     model.nodeDataArray = this.props.data
-    // let linksArray = this.generateLinksArray()
     diagram.model = new go.GraphLinksModel([],[]);
     diagram.nodeTemplate = this.generateNodeTemplate()
     diagram.linkTemplate = this.generateLinkTemplate()
@@ -268,13 +232,12 @@ export default class GoJs extends Component {
     let parsedContent2 = JSON.parse(property2)
     let parsedContent3 = JSON.parse(property3)
     let parsedContent4 = JSON.parse(property4)
-
     let content = ({...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4})
     let contents = this.state.contents
     contents.push(content)
     this.setState({contents})
     return content.identificador
-    }
+  }
 
   isNotInDiagram(content){
     let alreadyAdded = this.state.addedContentsIds;
@@ -295,22 +258,32 @@ export default class GoJs extends Component {
     let contents = this.state.contents
     flux.getOrderedContents().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
-        contents.push(content)
-        let point = {x: i, y: 0 }
+        let diagramContent = {
+          idcontent:content.contentId,
+          identificador:content.identificador,
+          category:content.categoria,
+          navegable:true
+        }
+        contents.push(diagramContent)
+        diagram.startTransaction('new node');
+        let point = diagram.transformViewToDoc(new go.Point(i * 100 , 300 + (i * 100)));
         diagram.model.addNodeData({
-          key:flux.name + " - " + content.identificador,
+          key:content.identificador,
           location:point,
           identificador:flux.name + " - " + content.identificador,
           color:go.Brush.randomColor()}
         )
+        diagram.commitTransaction('new node');
       }    
     })
     flux.getOrderedLinks().map(link => {
+      diagram.startTransaction('new link');
       diagram.model.addLinkDataCollection([{
-        from:flux.name + " - " + link.origin,
-        to:flux.name + " - " + link.destination
+        from:link.origin,
+        to:link.destination
       }])
-      diagram.commitTransaction('linkDrawn');
+      this.props.contentsManager.addLink(link);
+      diagram.commitTransaction('new link');
     })
     this.setState({
       contents,
@@ -345,17 +318,14 @@ export default class GoJs extends Component {
         event.dataTransfer.items[1].type,   //identificador
         event.dataTransfer.items[2].type, //categoria
       	event.dataTransfer.items[3].type), //isNavegable
-      color:go.Brush.randomColor()
+      color:go.Brush.randomColor(),
+      key:JSON.parse(event.dataTransfer.items[1].type).identificador //key is the same as identificador
     });
     diagram.commitTransaction('new node');
     this.setState({
       myDiagram:diagram,
       myModel:diagram.model      
-      //showSend:true
     })
-    // console.log(diagram.model.toJson());
-    // remove dragged element from its old location
-    // if (remove.checked) dragged.parentNode.removeChild(dragged);    
   }
 
   onDragOver(event){
@@ -382,27 +352,23 @@ export default class GoJs extends Component {
   }
 
   onChangeRadioLink = (e) =>{
-    console.log('radio checked link', e.target.value);
     this.setState({
       valueRadioLink:e.target.value
     })
   }
   
   onChangeRadioNode = (e) =>{
-    console.log('radio checked node', e.target.value);
     this.setState({
       valueRadioNode:e.target.value
     })
   }
 
   onChangeCheckNode = (checkedValue) => {
-    console.log('checked node = ', checkedValue);
   }
   onChangeCheckLink = (checkedValue) => {
     this.setState({
       valueCheck:checkedValue.target.checked
     })
-    console.log('checked link = ', checkedValue);
   }
 
   confirmNodeModal = () =>{
@@ -414,7 +380,6 @@ export default class GoJs extends Component {
       if(cont.identificador == contentNode)
         indice = index
     })
-    console.log("Confirm node modal ",contentNode,indice,contents)
     if(contents[indice].data) 
     	contents[indice].data.read = this.state.valueRadioNode
     else

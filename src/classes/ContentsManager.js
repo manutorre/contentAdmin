@@ -38,7 +38,9 @@ export default class ContentsManager {
   }
 
   getContentsForFluxOrdered(fluxId){
-    return this.getContentsForFlux(fluxId).sort((content1,content2) => {return content1.order - content2.order})
+    return this.getContentsForFlux(fluxId).sort((content1,content2) => 
+      content1.order - content2.order
+    )
   }
 
   getLinks(){
@@ -60,15 +62,19 @@ export default class ContentsManager {
   }
 
   getFirstLink(){
-    return this.links.filter( link => link.origin === (this.getFirstContent().identificador).toLowerCase())[0]
+    return this.links.filter( link => link.origin.toLowerCase() === (this.getFirstContent().identificador).toLowerCase())[0]
   }
 
   getContentById(contentId){
-    return this.contents.filter(content => content.identificador.toLowerCase() === contentId)[0]
+    return this.contents.filter(content => content.identificador.toLowerCase() === contentId.toLowerCase())[0]
   }
 
   getLinkWithOrigin(content){
-    return this.links.filter(link => link.origin === content.identificador.toLowerCase())[0]
+    return this.links.filter(link => link.origin.toLowerCase() === content.identificador.toLowerCase())[0]
+  }
+
+  removeLinkWithOrigin(identificador){
+    this.setLinks(this.links.filter(link => link.origin.toLowerCase() !== identificador))
   }
 
   getOrderedContents(){
