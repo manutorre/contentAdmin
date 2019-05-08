@@ -145,16 +145,21 @@ export default class GoJs extends Component {
     let model = goObj(go.TreeModel)
     let diagram = goObj(go.Diagram, this.refs.goJsDiv, {initialContentAlignment: go.Spot.Center});
     diagram.addDiagramListener("LinkDrawn", (ev) => {
-      debugger
       let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
       this.props.contentsManager.addLink(newLink);
     })
     diagram.addDiagramListener("LinkRelinked", (ev) => {
-      console.log(ev.parameter)
-      this.props.contentsManager.removeLinkWithOrigin(ev.parameter.from)
+      this.props.contentsManager.removeRelinkedLink(ev.parameter.part.key, ev.subject)
       let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
       this.props.contentsManager.addLink(newLink);      
     })
+    diagram.addDiagramListener("SelectionDeleted", (ev) => {
+      this.props.contentsManager.removeLinkWithOriginAndDestination(ev.subject.first().Yd.from, ev.subject.first().Yd.to)
+      //this.props.contentsManager.removeLinkWithOriginAndDestination(ev.parameter.part.key, ev.subject)
+      debugger
+      //let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
+      //this.props.contentsManager.addLink(newLink);      
+    })    
     this.setModelAndDiagram(model, diagram)
   
   }
