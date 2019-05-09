@@ -40,7 +40,7 @@ export default class LeftPanel extends React.Component {
         hiddenCards: hiddenCards
       })
       
-      if(this.state.selectedItem != ""){ 
+      if(this.state.selectedItem !== ""){ 
         this.selectCategory(this.state.selectedItem) //Si todavia no asigno categoria, mandar la que es por defecto
       }
       else{ //Mandar la primera
@@ -89,7 +89,6 @@ export default class LeftPanel extends React.Component {
               <h3 style={{color:"white",left:"10px"}}> Filter by category </h3>
               <Select value={this.state.selectedItem? this.state.selectedItem : undefined}  placeholder="Category" 
                   onChange={(e) =>this.selectCategory(e)} style={styles}>
-                  
                   {this.props.categories.map( (category, index) => {
                     return(
                         <Option 
