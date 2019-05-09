@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ContentAdmin from './ContentAdmin';
-import logo from './logo.svg';
+import logo from '../logo.svg';
 import './App.css';
 import 'antd/dist/antd.css'
 

@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import go from 'gojs';
 import {Button, Spin, Modal, Input, Select, Collapse, Icon, message,Checkbox, Radio} from 'antd'
 import axios from 'axios'
-import Link from './classes/Link';
+import Link from '../classes/Link';
 const goObj = go.GraphObject.make;
 
 export default class GoJs extends Component {
@@ -19,10 +19,8 @@ export default class GoJs extends Component {
       modalLinkVisible:false,
       modalNodeVisible:false,
       contents:[],
-      links:[],
       myModel: null, 
       myDiagram: null,
-      contentsToSend:[],
       loading:false,
       success:null,
       error:null,
@@ -51,7 +49,6 @@ export default class GoJs extends Component {
 
   componentWillReceiveProps(props){
     if (props.shouldShowFlux || props.fluxId) {
-      //this.setState({showSend:true})
       this.addContentsManually(props.fluxId);
     }
   }
@@ -86,7 +83,6 @@ export default class GoJs extends Component {
         doubleClick: function(e, node) {
             // node is the Node that was double-clicked
             let data = node.data;
-            console.log("Fired Double click!!! ",data)
             let identificador = data.identificador
             handlerThis.setState({
               modalNodeVisible:true,
@@ -124,8 +120,6 @@ export default class GoJs extends Component {
         doubleClick: function(e, link) {
             // node is the Node that was double-clicked
             let identificador = link.toNode.data.identificador;
-            console.log("Fired Double click!!! ",identificador)
-
             handlerThis.setState({
               modalLinkVisible:true,
               temporaryLink:identificador
@@ -160,17 +154,12 @@ export default class GoJs extends Component {
   
   }
 
-  primero(){
-    this.props.contentsManager.getFirstContent();
-  }
-
   showSendDataModal(){
     this.setState({modalVisible:true})
   }
 
   sendData(){
         this.props.contentsManager.setContents(this.state.contents)
-        debugger
         let contents = this.props.contentsManager.getOrderedContents()
         this.setState({
             loading:true
@@ -205,15 +194,12 @@ export default class GoJs extends Component {
             console.log(error)
           })
         }
-      //}
-    //})
     this.setState({
       modalVisible:false,
     })
   }
   
   setModelAndDiagram(model, diagram){
-    model.nodeDataArray = this.props.data
     diagram.model = new go.GraphLinksModel([],[]);
     diagram.nodeTemplate = this.generateNodeTemplate()
     diagram.linkTemplate = this.generateLinkTemplate()
@@ -228,22 +214,18 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  getContentStructure(property1,property2,property3,property4){ //crea el content object
-    let parsedContent1 = JSON.parse(property1)
-    let parsedContent2 = JSON.parse(property2)
-    let parsedContent3 = JSON.parse(property3)
-    let parsedContent4 = JSON.parse(property4)
-    let content = ({...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4})
-    let contents = this.state.contents
-    contents.push(content)
-    this.setState({contents})
-    return content.identificador
+  getContentStructure(properties){ //crea el content object
+    let parsedContent1 = JSON.parse(properties[0].type)
+    let parsedContent2 = JSON.parse(properties[1].type)
+    let parsedContent3 = JSON.parse(properties[2].type)
+    let parsedContent4 = JSON.parse(properties[3].type)
+    return {...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4}
   }
 
   isNotInDiagram(content){
     let alreadyAdded = this.state.addedContentsIds;
     let flag = false;
-    let isAlreadyInDiagram = this.state.addedContentsIds.filter( id => JSON.stringify(content.contentId) == JSON.stringify(id)).length > 0
+    let isAlreadyInDiagram = this.state.addedContentsIds.filter( id => JSON.stringify(content.contentId) === JSON.stringify(id)).length > 0
     if (!isAlreadyInDiagram) {
       alreadyAdded.push(content.contentId)
       flag = true
@@ -312,13 +294,13 @@ export default class GoJs extends Component {
     var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
     var point = diagram.transformViewToDoc(new go.Point(mx, my));
     diagram.startTransaction('new node');
+    let content = this.getContentStructure(event.dataTransfer.items)
+    let contents = this.state.contents
+    contents.push(content)
+    this.setState({contents})    
     diagram.model.addNodeData({
       location: point,
-      identificador: this.getContentStructure(
-        event.dataTransfer.items[0].type,  //idContent 
-        event.dataTransfer.items[1].type,   //identificador
-        event.dataTransfer.items[2].type, //categoria
-      	event.dataTransfer.items[3].type), //isNavegable
+      identificador: content.identificador,
       color:go.Brush.randomColor(),
       key:JSON.parse(event.dataTransfer.items[1].type).identificador //key is the same as identificador
     });
@@ -378,7 +360,7 @@ export default class GoJs extends Component {
     let contents = this.state.contents
     let indice = null 
     this.state.contents.map((cont,index)=>{
-      if(cont.identificador == contentNode)
+      if(cont.identificador === contentNode)
         indice = index
     })
     if(contents[indice].data) 
@@ -400,7 +382,7 @@ export default class GoJs extends Component {
     let contents = this.state.contents
     let indice = null 
     this.state.contents.map((cont,index)=>{
-      if(cont.identificador == contentNode)
+      if(cont.identificador === contentNode)
         indice = index
     })
     if(contents[indice].data){ 
