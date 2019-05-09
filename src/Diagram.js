@@ -359,6 +359,8 @@ export default class GoJs extends Component {
   }
 
   onDragOver(event){
+    //-----FALTA CONTROLAR QUE NO SE PUEDA SOLTAR UN CONTENIDO INHABILITADO EN EL DIAGRAMA
+    //Agregar tmb un metodo para dar aviso al hacer un mouseOver sobre el contenido inhabilitado
     event.stopPropagation();
     event.preventDefault();
   }
