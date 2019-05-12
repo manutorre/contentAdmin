@@ -75,12 +75,14 @@ export default class ContentsManager {
   }
 
   removeRelinkedLink(discardedNodeKey, subject){
+    let subjectFromLinkKey = subject.fromNode.key
+    let subjectToLinkKey = subject.toNode.key
     let linkToRemove
-    if (this.links.filter(link => link.destination.toLowerCase() === discardedNodeKey && link.origin.toLowerCase() === subject.fromNode.key).length > 0) {
-      linkToRemove = this.links.filter(link => link.destination.toLowerCase() === discardedNodeKey && link.origin.toLowerCase() === subject.fromNode.key)[0]
+    if (this.links.filter(link => link.destination === discardedNodeKey && link.origin === subjectFromLinkKey).length > 0) {
+      linkToRemove = this.links.filter(link => link.destination === discardedNodeKey && link.origin === subjectFromLinkKey)[0]
     }
-    if (this.links.filter(link => link.origin.toLowerCase() === discardedNodeKey && link.destination.toLowerCase() === subject.toNode.key).length > 0){
-      linkToRemove = this.links.filter(link => link.origin.toLowerCase() === discardedNodeKey && link.destination.toLowerCase() === subject.toNode.key)[0]
+    if (this.links.filter(link => link.origin === discardedNodeKey && link.destination === subjectToLinkKey).length > 0){
+      linkToRemove = this.links.filter(link => link.origin === discardedNodeKey && link.destination === subjectToLinkKey)[0]
     } 
     this.setLinks(this.links.filter(link => link !== linkToRemove))
   }
