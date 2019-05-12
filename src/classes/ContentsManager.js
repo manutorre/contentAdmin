@@ -77,18 +77,18 @@ export default class ContentsManager {
   removeRelinkedLink(discardedNodeKey, subject){
     let subjectFromLinkKey = subject.fromNode.key
     let subjectToLinkKey = subject.toNode.key
-    let linkToRemove
     if (this.links.filter(link => link.destination === discardedNodeKey && link.origin === subjectFromLinkKey).length > 0) {
-      linkToRemove = this.links.filter(link => link.destination === discardedNodeKey && link.origin === subjectFromLinkKey)[0]
+      return this.removeLinkWithOriginAndDestination(subjectFromLinkKey, discardedNodeKey)
     }
-    if (this.links.filter(link => link.origin === discardedNodeKey && link.destination === subjectToLinkKey).length > 0){
-      linkToRemove = this.links.filter(link => link.origin === discardedNodeKey && link.destination === subjectToLinkKey)[0]
-    } 
-    this.setLinks(this.links.filter(link => link !== linkToRemove))
+    else{
+      if (this.links.filter(link => link.origin === discardedNodeKey && link.destination === subjectToLinkKey).length > 0){
+        return this.removeLinkWithOriginAndDestination(discardedNodeKey, subjectToLinkKey)
+      } 
+    }
   }
 
   removeLinkWithOriginAndDestination(from, to){
-    this.setLinks(this.links.filter(link => !(link.origin.toLowerCase() === from.toLowerCase() && link.destination.toLowerCase() === to.toLowerCase())))
+    this.setLinks(this.links.filter(link => !(link.origin === from && link.destination === to)))
   }
 
   getOrderedContents(){
