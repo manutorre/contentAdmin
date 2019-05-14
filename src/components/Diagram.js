@@ -48,8 +48,8 @@ export default class GoJs extends Component {
   }
 
   componentWillReceiveProps(props){
-    if (props.shouldShowFlux || props.fluxId) {
-      this.addContentsManually(props.fluxId);
+    if (props.shouldShowFlux || props.flux) {
+      this.addContentsManually(props.flux);
     }
   }
 
@@ -163,12 +163,6 @@ export default class GoJs extends Component {
         let contents = this.props.contentsManager.getOrderedContents()
         this.setState({
             loading:true
-        })
-        axios.get('https://alexa-apirest.herokuapp.com/users/admin/getContents/gonza')
-        .then((response) => {
-          if (response.data.length > 0) {
-            this.props.contentsManager.setContents(response.data)
-          }
         })
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
         if(this.state.showSend){
