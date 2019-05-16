@@ -14,6 +14,7 @@ export default class ContentAdmin extends React.Component{
       showFluxContent: false,
       diagramFluxId: false,
       categories: [],
+      contents:[]
     }
     this.contentsManager = new ContentsManager();
     this.addFluxToDiagram = this.addFluxToDiagram.bind(this)
@@ -29,6 +30,7 @@ export default class ContentAdmin extends React.Component{
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByFirstCategory/gonza").then( (response) => {
       if (response.data.length > 0) {
         this.contentsManager.setContents(response.data);
+        this.setState({contents:response.data})
       }  
     });
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsAndFlows/gonza").then( (response) => {
@@ -38,10 +40,10 @@ export default class ContentAdmin extends React.Component{
   })    
   }
 
-  addFluxToDiagram(id){
+  addFluxToDiagram(flux){
     this.setState({
       showFluxContent:true,
-      diagramFluxId: id
+      diagramFlux: flux
     })
   }
   
@@ -53,8 +55,9 @@ export default class ContentAdmin extends React.Component{
       <div>
         <Layout style={{height:"1000px"}}>
         <Sider>
-          {this.contentsManager.getContents().length > 0 && 
-            <LeftPanel 
+          {this.state.contents.length > 0 && 
+            <LeftPanel
+              contents={this.state.contents}
               manager={this.contentsManager} 
               addFluxToDiagram={this.addFluxToDiagram}
               categories={this.state.categories}
@@ -67,7 +70,7 @@ export default class ContentAdmin extends React.Component{
             <Diagram
               shouldShowFlux={this.state.showFluxContent}
               contentsManager={this.contentsManager}
-              fluxId={this.state.diagramFluxId}
+              flux={this.state.diagramFlux}
             />
           </Content>
         </Layout>

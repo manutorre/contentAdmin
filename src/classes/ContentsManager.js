@@ -75,18 +75,20 @@ export default class ContentsManager {
   }
 
   removeRelinkedLink(discardedNodeKey, subject){
-    let linkToRemove
-    if (this.links.filter(link => link.destination.toLowerCase() === discardedNodeKey && link.origin.toLowerCase() === subject.fromNode.key).length > 0) {
-      linkToRemove = this.links.filter(link => link.destination.toLowerCase() === discardedNodeKey && link.origin.toLowerCase() === subject.fromNode.key)[0]
+    let subjectFromLinkKey = subject.fromNode.key
+    let subjectToLinkKey = subject.toNode.key
+    if (this.links.filter(link => link.destination === discardedNodeKey && link.origin === subjectFromLinkKey).length > 0) {
+      return this.removeLinkWithOriginAndDestination(subjectFromLinkKey, discardedNodeKey)
     }
-    if (this.links.filter(link => link.origin.toLowerCase() === discardedNodeKey && link.destination.toLowerCase() === subject.toNode.key).length > 0){
-      linkToRemove = this.links.filter(link => link.origin.toLowerCase() === discardedNodeKey && link.destination.toLowerCase() === subject.toNode.key)[0]
-    } 
-    this.setLinks(this.links.filter(link => link !== linkToRemove))
+    else{
+      if (this.links.filter(link => link.origin === discardedNodeKey && link.destination === subjectToLinkKey).length > 0){
+        return this.removeLinkWithOriginAndDestination(discardedNodeKey, subjectToLinkKey)
+      } 
+    }
   }
 
   removeLinkWithOriginAndDestination(from, to){
-    this.setLinks(this.links.filter(link => !(link.origin.toLowerCase() === from.toLowerCase() && link.destination.toLowerCase() === to.toLowerCase())))
+    this.setLinks(this.links.filter(link => !(link.origin === from && link.destination === to)))
   }
 
   getOrderedContents(){
