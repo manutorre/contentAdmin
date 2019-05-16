@@ -69,7 +69,6 @@ export default class ContentAdmin extends React.Component{
           <Content>
             <Diagram
               shouldShowFlux={this.state.showFluxContent}
-              contentsManager={this.contentsManager}
               flux={this.state.diagramFlux}
             />
           </Content>

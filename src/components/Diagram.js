@@ -3,6 +3,7 @@ import go from 'gojs';
 import {Button, Spin, Modal, Input, Select, Collapse, Icon, message,Checkbox, Radio} from 'antd'
 import axios from 'axios'
 import Link from '../classes/Link';
+import Flux from '../classes/Flux';
 const goObj = go.GraphObject.make;
 
 export default class GoJs extends Component {
@@ -11,6 +12,8 @@ export default class GoJs extends Component {
     super (props);
     this.renderCanvas = this.renderCanvas.bind (this);
     this.state = {
+      keyForRerender:0,
+      flux:null,
       temporaryContent:null,
       temporaryLink:null,
       valueRadioLink:null,
@@ -50,6 +53,7 @@ export default class GoJs extends Component {
   componentWillReceiveProps(props){
     if (props.shouldShowFlux || props.flux) {
       this.addContentsManually(props.flux);
+      console.log(this.state)
     }
   }
 
@@ -139,17 +143,21 @@ export default class GoJs extends Component {
     let model = goObj(go.TreeModel)
     let diagram = goObj(go.Diagram, this.refs.goJsDiv, {initialContentAlignment: go.Spot.Center});
     diagram.addDiagramListener("LinkDrawn", (ev) => {
-      let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
-      this.props.contentsManager.addLink(newLink);
+      this.state.flux.addLinkWithOriginAndDestination(ev.subject.fromNode.data.key, ev.subject.toNode.data.key);
+      this.setState({keyForRerender:Math.random()})
     })
     diagram.addDiagramListener("LinkRelinked", (ev) => {
-      this.props.contentsManager.removeRelinkedLink(ev.parameter.part.key, ev.subject)
-      let newLink = new Link(ev.subject.fromNode.data.key, ev.subject.toNode.data.key)
-      this.props.contentsManager.addLink(newLink);      
+      this.state.flux.relink(ev.parameter.part.key, ev.subject) // first param is the discarded node of the link, the second is the one that remains
     })
     diagram.addDiagramListener("SelectionDeleted", (ev) => {
-      this.props.contentsManager.removeLinkWithOriginAndDestination(ev.subject.first().Yd.from, ev.subject.first().Yd.to)
-    })    
+      if (ev.subject.first().Yd.from) {
+        this.state.flux.removeLinkWithOriginAndDestination(ev.subject.first().Yd.from, ev.subject.first().Yd.to)      
+        this.setState({keyForRerender:Math.random()})
+      }
+      else{
+        this.state.flux.removeContent(ev.subject.first().part.data.identificador)
+      }
+    })
     this.setModelAndDiagram(model, diagram)
   
   }
@@ -159,8 +167,7 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-        this.props.contentsManager.setContents(this.state.contents)
-        let contents = this.props.contentsManager.getOrderedContents()
+        let contents = this.state.flux.getOrderedContentsFromLinks()
         this.setState({
             loading:true
         })
@@ -233,7 +240,7 @@ export default class GoJs extends Component {
   addContentsManually(flux){
     let diagram = this.state.myDiagram
     let contents = this.state.contents
-    flux.getOrderedContents().map( (content, i) => {
+    flux.getOrderedContentsFromOrderField().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
         let diagramContent = {
           idcontent:content.contentId,
@@ -253,16 +260,16 @@ export default class GoJs extends Component {
         diagram.commitTransaction('new node');
       }    
     })
-    flux.getOrderedLinks().map(link => {
+    flux.getLinks().map(link => {
       diagram.startTransaction('new link');
       diagram.model.addLinkDataCollection([{
         from:link.origin,
         to:link.destination
       }])
-      this.props.contentsManager.addLink(link);
       diagram.commitTransaction('new link');
     })
     this.setState({
+      flux,
       contents,
       myDiagram:diagram,
       myModel:diagram.model,
@@ -272,6 +279,13 @@ export default class GoJs extends Component {
 
 
   onDiagramDrop(event){
+    let content = this.getContentStructure(event.dataTransfer.items)
+    if (this.state.flux === null) {
+      this.setState({flux: new Flux('new flux', [content])})
+    }
+    else{
+      this.state.flux.addContent(content)
+    }
     window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
     let pixelratio = window.PIXELRATIO;
     let can = event.target;
@@ -287,16 +301,15 @@ export default class GoJs extends Component {
     var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
     var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
     var point = diagram.transformViewToDoc(new go.Point(mx, my));
-    diagram.startTransaction('new node');
-    let content = this.getContentStructure(event.dataTransfer.items)
-    let contents = this.state.contents
+    diagram.startTransaction('new node')
+    let {contents} = this.state
     contents.push(content)
     this.setState({contents})    
     diagram.model.addNodeData({
       location: point,
       identificador: content.identificador,
       color:go.Brush.randomColor(),
-      key:JSON.parse(event.dataTransfer.items[1].type).identificador //key is the same as identificador
+      key:content.identificador //key is the same as identificador
     });
     diagram.commitTransaction('new node');
     this.setState({
@@ -444,7 +457,12 @@ export default class GoJs extends Component {
         <div className="sendButtonContainer">
           {(this.state.success)? this.success() : null }
 
-          <Button className="sendButton" onClick={this.showSendDataModal} disabled={this.state.contents.length === 0 }> Deploy to skill </Button>
+          <Button className="sendButton" 
+          onClick={this.showSendDataModal} 
+          key={this.state.keyForRerender}
+          disabled={!this.state.flux || (this.state.flux && this.state.flux.contents.length !== (this.state.flux.links.length + 1))}> 
+            Deploy to skill 
+          </Button>
           
           {(this.state.error)? this.error() : null}
       </div>
