@@ -13,12 +13,12 @@ export default class FluxTab extends React.Component{
     }
   }
 
-  addFluxToDiagram(id){
-    this.props.addFluxToDiagram(id);
+  addFluxToDiagram(flux){
+    this.props.addFluxToDiagram(flux);
     this.setState({
       modalVisible:false,
       fluxInDiagram:{
-        [id]:true
+        [flux.name]:true
       }
     })
   }
@@ -38,7 +38,7 @@ export default class FluxTab extends React.Component{
         <Button 
           type="primary" 
           onClick={() => this.addFluxToDiagram(flux)}
-          disabled={this.state.fluxInDiagram[flux]}
+          disabled={this.state.fluxInDiagram[flux.name]}
         >
           Edit
         </Button>
@@ -57,7 +57,7 @@ export default class FluxTab extends React.Component{
   render(){
     return(
       <div>
-        {this.props.manager.getFluxes().map( (flux,i) =>
+        {this.props.fluxes.map( (flux,i) =>
           <div key={i}> 
             {this.state.modalVisible[i] && this.renderModal(flux)}
             <MultiCard

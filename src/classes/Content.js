@@ -1,52 +1,37 @@
 export default class Content {
 
-  constructor(xpath, url, idContent, category, metaInfo){
-    this.xpath = xpath;
-    this.url = url
+  constructor(name, idContent, category){
+    this.name = name;
     this.idContent = idContent
-    this.metaInfo = metaInfo
     this.category = category
   }
 
-  getXpath(){
-    return this.xpath
+  getName(){
+    return this.name
   }
 
-  getUrl(){
-    return this.url
-  }
-
-  getidContent(){
+  getIdContent(){
     return this.idContent
-  }
-
-  getmetaInfo(){
-    return this.metaInfo
   }
 
   getCategory(){
     return this.category
   }
 
-  setXpath(xpath){
-    this.xpath = xpath;
+  getIsNavegable(){
+    return this.isNavegable
+  }  
+
+  setName(name){
+    this.name = name;
   }
 
-  setUrl(url){
-    this.url = url;
-  }
-
-  setidContent(idContent){
+  setIdContent(idContent){
     this.idContent = idContent;
-  }
-
-  setmetaInfo(metaInfo){
-    this.metaInfo = metaInfo;
   }
 
   setCategory(category){
     this.category = category;
   }
-
 
 }

@@ -5,6 +5,7 @@ import LeftPanel from './LeftPanel'
 import Diagram from './Diagram'
 import axios from 'axios'
 import ContentsManager from '../classes/ContentsManager'
+import Flux from '../classes/Flux'
 
 export default class ContentAdmin extends React.Component{
 
@@ -14,30 +15,35 @@ export default class ContentAdmin extends React.Component{
       showFluxContent: false,
       diagramFluxId: false,
       categories: [],
-      contents:[]
+      contents:[],
+      fluxes:[]
     }
     this.contentsManager = new ContentsManager();
+    this.changeContents = this.changeContents.bind(this)
     this.addFluxToDiagram = this.addFluxToDiagram.bind(this)
   }
 
   componentDidMount(){
     axios.get("https://alexa-apirest.herokuapp.com/users/categories/gonza").then( (response) => {
-      if (response.data.length > 0) {
-        this.setState({categories:response.data}) 
-      }  
+      if (response.data.length > 0) this.setState({categories:response.data}) 
     });
 
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByFirstCategory/gonza").then( (response) => {
-      if (response.data.length > 0) {
-        this.contentsManager.setContents(response.data);
-        this.setState({contents:response.data})
-      }  
+      if (response.data.length > 0) this.setState({contents:response.data})  
     });
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsAndFlows/gonza").then( (response) => {
+      let fluxes;
       if (response.data.length > 0) {
-        this.contentsManager.setFluxes(response.data);
-      }  
+        fluxes = response.data.map(flux => {
+          return new Flux(flux._id, flux.contenidos)
+        })
+      }
+      this.setState({fluxes})  
   })    
+  }
+
+  changeContents(newContents){
+    this.setState({contents:newContents})
   }
 
   addFluxToDiagram(flux){
@@ -57,8 +63,9 @@ export default class ContentAdmin extends React.Component{
         <Sider>
           {this.state.contents.length > 0 && 
             <LeftPanel
+              changeContents={this.changeContents}
               contents={this.state.contents}
-              manager={this.contentsManager} 
+              fluxes={this.state.fluxes}
               addFluxToDiagram={this.addFluxToDiagram}
               categories={this.state.categories}
               />

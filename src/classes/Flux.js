@@ -5,7 +5,7 @@ export default class Flux {
   constructor(name, contents, links){
     this.name = name;
     this.contents = contents ? contents : [];
-    this.links = links ? links : this.getOrderedLinksFromContentsOrder()
+    this.links = links ? links : []
   }
 
   addLink(link){
@@ -38,7 +38,8 @@ export default class Flux {
 
 
   getOrderedContentsFromOrderField(){
-    return this.contents.sort((content1,content2) => {return content1.order - content2.order})
+    debugger
+    return this.contents.sort((content1,content2) => {return content1.getOrder() - content2.getOrder()})
   }
 
   relink(discardedNodeKey, subject){
@@ -71,8 +72,8 @@ export default class Flux {
     let links = []
     this.getOrderedContentsFromOrderField().map( (content,i) => {
       if (this.getOrderedContentsFromOrderField()[i + 1]) {
-        let origin = content.identificador
-        let destination = this.getOrderedContentsFromOrderField()[i + 1].identificador
+        let origin = content.getName()
+        let destination = this.getOrderedContentsFromOrderField()[i + 1].getName()
         links.push(new Link(origin, destination))
       }
     })
@@ -98,17 +99,17 @@ export default class Flux {
 
   getFirstContentFromLinks(){ //returns the content that is no destination for any link but that is origin of one. contents out of the flow are ignored
     return this.contents.filter( content => {
-      return this.links.filter( link => link.destination.toLowerCase() === content.identificador.toLowerCase()).length === 0 &&
-             this.links.filter( link => link.origin.toLowerCase() === content.identificador.toLowerCase()).length === 1
+      return this.links.filter( link => link.destination.toLowerCase() === content.getName().toLowerCase()).length === 0 &&
+             this.links.filter( link => link.origin.toLowerCase() === content.getName().toLowerCase()).length === 1
     })[0];
   }
 
   getLinkWithOrigin(content){
-    return this.links.filter(link => link.origin.toLowerCase() === content.identificador.toLowerCase())[0]
+    return this.links.filter(link => link.origin.toLowerCase() === content.getName().toLowerCase())[0]
   }
 
   getContentById(contentId){
-    return this.contents.filter(content => content.identificador.toLowerCase() === contentId.toLowerCase())[0]
+    return this.contents.filter(content => content.getName().toLowerCase() === contentId.toLowerCase())[0]
   }
 
 }

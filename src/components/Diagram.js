@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import go from 'gojs';
 import {Button, Spin, Modal, Input, Select, Collapse, Icon, message,Checkbox, Radio} from 'antd'
 import axios from 'axios'
-import Link from '../classes/Link';
+import FluxContent from '../classes/FluxContent';
+import DroppableContent from '../classes/DroppableContent';
 import Flux from '../classes/Flux';
 const goObj = go.GraphObject.make;
 
@@ -33,7 +34,7 @@ export default class GoJs extends Component {
       showSend:false,
       pattern:null,
       index:null,
-      addedContentsIds:[],
+      addedContents:[],
       patterns:["Read only titles","Read introduction and content"],//,"Read paragraph to paragraph"
       infoPatterns:["Only the titles of the contents defined in the flow will be read continuously."
       ,"The titles of the defined contents will be read one at a time, giving the possibility to choose to read an introduction and then the rest of the content."
@@ -51,7 +52,7 @@ export default class GoJs extends Component {
   }
 
   componentWillReceiveProps(props){
-    if (props.shouldShowFlux || props.flux) {
+    if (props.shouldShowFlux !== this.props.shouldShowFlux || props.flux !== this.props.flux) {
       this.addContentsManually(props.flux);
       console.log(this.state)
     }
@@ -215,61 +216,79 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  getContentStructure(properties){ //crea el content object
+  getFluxContent(content){
+    return new FluxContent(content.identificador, content.contentId, content.categoria, content.order)
+  }
+
+  getDroppableContent(properties){ //crea el content object
     let parsedContent1 = JSON.parse(properties[0].type)
     let parsedContent2 = JSON.parse(properties[1].type)
     let parsedContent3 = JSON.parse(properties[2].type)
     let parsedContent4 = JSON.parse(properties[3].type)
-    return {...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4}
+    const content = {...parsedContent1,...parsedContent2,...parsedContent3,...parsedContent4}
+    return new DroppableContent(content.identificador, content.contentid, content.categoria, content.isnavegable ) 
   }
 
   isNotInDiagram(content){
-    let alreadyAdded = this.state.addedContentsIds;
     let flag = false;
-    let isAlreadyInDiagram = this.state.addedContentsIds.filter( id => JSON.stringify(content.contentId) === JSON.stringify(id)).length > 0
+    let isAlreadyInDiagram = this.state.addedContents.filter( addedContent => {
+      return JSON.stringify(addedContent.getIdContent()) === JSON.stringify(content.getIdContent())
+    }).length > 0
     if (!isAlreadyInDiagram) {
-      alreadyAdded.push(content.contentId)
       flag = true
-      this.setState({
-        addedContentsIds:alreadyAdded
-      })
+      this.setState(prevState => ({
+        addedContents:[...prevState.addedContents, content]
+      }))
     }
     return flag;
   }
 
+
+  doesLinkApplies(link, oldContents, fluxName){
+    return oldContents.filter( 
+      content => link.origin === content.getName() ||
+      link.destination === content.getName() )
+      .length === 0
+  }
+
   addContentsManually(flux){
+    let newFlux = new Flux(flux.name);
     let diagram = this.state.myDiagram
     let contents = this.state.contents
+    const oldContents = this.state.addedContents
     flux.getOrderedContentsFromOrderField().map( (content, i) => {
-      if (this.isNotInDiagram(content)) {
-        let diagramContent = {
-          idcontent:content.contentId,
-          identificador:content.identificador,
-          category:content.categoria,
-          navegable:true
-        }
-        contents.push(diagramContent)
+      let fluxContent = this.getFluxContent(content);
+      if (this.isNotInDiagram(fluxContent)) {
+        newFlux.addContent(fluxContent)
+        contents.push(fluxContent)
         diagram.startTransaction('new node');
         let point = diagram.transformViewToDoc(new go.Point(i * 100 , 300 + (i * 100)));
         diagram.model.addNodeData({
-          key:content.identificador,
+          key:fluxContent.getName(),
           location:point,
-          identificador:flux.name + " - " + content.identificador,
+          identificador:flux.name + " - " + fluxContent.getName(),
           color:go.Brush.randomColor()}
         )
         diagram.commitTransaction('new node');
       }    
     })
-    flux.getLinks().map(link => {
-      diagram.startTransaction('new link');
-      diagram.model.addLinkDataCollection([{
-        from:link.origin,
-        to:link.destination
-      }])
-      diagram.commitTransaction('new link');
+    flux.getOrderedLinksFromContentsOrder().map(link => {
+      if (this.doesLinkApplies(link,oldContents, flux.name)) {
+        newFlux.addLink(link)
+        diagram.startTransaction('new link');
+        diagram.model.addLinkDataCollection([{
+          from:link.origin,
+          to:link.destination
+        }])
+        diagram.commitTransaction('new link');
+      }
     })
+    if (this.state.flux) {
+      newFlux.setContents(newFlux.getContents().concat(this.state.flux.getContents()))
+      newFlux.setLinks(newFlux.getLinks().concat(this.state.flux.getLinks()))
+    }
     this.setState({
-      flux,
+      flux:newFlux,
       contents,
       myDiagram:diagram,
       myModel:diagram.model,
@@ -279,43 +298,49 @@ export default class GoJs extends Component {
 
 
   onDiagramDrop(event){
-    let content = this.getContentStructure(event.dataTransfer.items)
-    if (this.state.flux === null) {
-      this.setState({flux: new Flux('new flux', [content])})
+    let content = this.getDroppableContent(event.dataTransfer.items)
+    console.log(this.isNotInDiagram(content))
+    if (this.isNotInDiagram(content)) {
+      if (this.state.flux === null) {
+        this.setState({flux: new Flux('new flux', [content])})
+      }
+      else{
+        this.state.flux.addContent(content)
+      }
+      window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
+      let pixelratio = window.PIXELRATIO;
+      let can = event.target;
+  
+      // if the target is not the canvas, we may have trouble, so just quit:
+      if (!(can instanceof HTMLCanvasElement)) return;
+      let diagram = this.state.myDiagram
+      var bbox = can.getBoundingClientRect();
+      var bbw = bbox.width;
+      if (bbw === 0) bbw = 0.001;
+      var bbh = bbox.height;
+      if (bbh === 0) bbh = 0.001;
+      var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
+      var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
+      var point = diagram.transformViewToDoc(new go.Point(mx, my));
+      diagram.startTransaction('new node')
+      let {contents} = this.state
+      contents.push(content)
+      this.setState({contents})    
+      diagram.model.addNodeData({
+        location: point,
+        identificador: content.getName(),
+        color:go.Brush.randomColor(),
+        key:content.getName() //key is the same as identificador
+      });
+      diagram.commitTransaction('new node');
+      this.setState({
+        myDiagram:diagram,
+        myModel:diagram.model
+      })
+      this.setState(prevState => ({
+        addedContents:[...prevState.addedContents, content]
+      }))
     }
-    else{
-      this.state.flux.addContent(content)
-    }
-    window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
-    let pixelratio = window.PIXELRATIO;
-    let can = event.target;
-
-    // if the target is not the canvas, we may have trouble, so just quit:
-    if (!(can instanceof HTMLCanvasElement)) return;
-    let diagram = this.state.myDiagram
-    var bbox = can.getBoundingClientRect();
-    var bbw = bbox.width;
-    if (bbw === 0) bbw = 0.001;
-    var bbh = bbox.height;
-    if (bbh === 0) bbh = 0.001;
-    var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
-    var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
-    var point = diagram.transformViewToDoc(new go.Point(mx, my));
-    diagram.startTransaction('new node')
-    let {contents} = this.state
-    contents.push(content)
-    this.setState({contents})    
-    diagram.model.addNodeData({
-      location: point,
-      identificador: content.identificador,
-      color:go.Brush.randomColor(),
-      key:content.identificador //key is the same as identificador
-    });
-    diagram.commitTransaction('new node');
-    this.setState({
-      myDiagram:diagram,
-      myModel:diagram.model      
-    })
   }
 
   onDragOver(event){
