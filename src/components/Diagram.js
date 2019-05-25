@@ -236,44 +236,40 @@ export default class GoJs extends Component {
     }).length > 0
     if (!isAlreadyInDiagram) {
       flag = true
-      this.setState(prevState => ({
-        addedContents:[...prevState.addedContents, content]
-      }))
     }
     return flag;
   }
 
 
-  doesLinkApplies(link, oldContents, fluxName){
-    return oldContents.filter( 
-      content => link.origin === content.getName() ||
-      link.destination === content.getName() )
+  doesLinkApplies(link, oldContents){
+    return oldContents.filter( content => link.origin.toLowerCase() === content.getName().toLowerCase() || link.destination.toLowerCase() === content.getName().toLowerCase() )
       .length === 0
   }
 
   addContentsManually(flux){
     let newFlux = new Flux(flux.name);
     let diagram = this.state.myDiagram
-    let contents = this.state.contents
     const oldContents = this.state.addedContents
     flux.getOrderedContentsFromOrderField().map( (content, i) => {
-      let fluxContent = this.getFluxContent(content);
-      if (this.isNotInDiagram(fluxContent)) {
-        newFlux.addContent(fluxContent)
-        contents.push(fluxContent)
+      if (this.isNotInDiagram(content)) {
+        newFlux.addContent(content)
         diagram.startTransaction('new node');
-        let point = diagram.transformViewToDoc(new go.Point(i * 100 , 300 + (i * 100)));
+        let point = diagram.transformViewToDoc(new go.Point(300 + i * 100 , 100 + (i * 100)));
         diagram.model.addNodeData({
-          key:fluxContent.getName(),
+          key:content.getName(),
           location:point,
-          identificador:flux.name + " - " + fluxContent.getName(),
+          identificador:flux.name + " - " + content.getName(),
           color:go.Brush.randomColor()}
-        )
-        diagram.commitTransaction('new node');
-      }    
+          )
+          diagram.commitTransaction('new node');
+          this.setState(prevState => ({
+            addedContents:[...prevState.addedContents, content]
+          }))
+      }
     })
     flux.getOrderedLinksFromContentsOrder().map(link => {
-      if (this.doesLinkApplies(link,oldContents, flux.name)) {
+      if (this.doesLinkApplies(link,oldContents)) {
+        console.log(link)
         newFlux.addLink(link)
         diagram.startTransaction('new link');
         diagram.model.addLinkDataCollection([{
@@ -284,12 +280,11 @@ export default class GoJs extends Component {
       }
     })
     if (this.state.flux) {
-      newFlux.setContents(newFlux.getContents().concat(this.state.flux.getContents()))
-      newFlux.setLinks(newFlux.getLinks().concat(this.state.flux.getLinks()))
+      this.state.flux.contents.map( content => newFlux.addContent(content))
+      this.state.flux.links.map(link => newFlux.addLink(link))
     }
     this.setState({
       flux:newFlux,
-      contents,
       myDiagram:diagram,
       myModel:diagram.model,
       inputValue:flux.name
@@ -454,7 +449,7 @@ export default class GoJs extends Component {
       height: '30px',
       lineHeight: '30px',
     };
-
+    console.log(this.state.flux)
     return(
       
       <div>
@@ -470,12 +465,11 @@ export default class GoJs extends Component {
         onDragOver={this.onDragOver}
         >
           <div  ref="goJsDiv" style={{
-              'width': '100%',
+              'width': '116%',
               'height': '874px', 
-              'backgroundColor': "white"
+              'backgroundColor': "white",
+              'marginLeft':"-16%"
             }}>
-          </div>
-          <div  className="watermark__cover">
           </div>
         </div>
 

@@ -1,10 +1,11 @@
 import Link from './Link'
+import FluxContent from './FluxContent';
 
 export default class Flux {
 
   constructor(name, contents, links){
     this.name = name;
-    this.contents = contents ? contents : [];
+    this.contents = contents ? contents.map(content => new FluxContent(content.identificador, content.contentId, content.categoria, content.order)) : [];
     this.links = links ? links : []
   }
 
@@ -38,7 +39,6 @@ export default class Flux {
 
 
   getOrderedContentsFromOrderField(){
-    debugger
     return this.contents.sort((content1,content2) => {return content1.getOrder() - content2.getOrder()})
   }
 
