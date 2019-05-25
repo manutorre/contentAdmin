@@ -20,10 +20,10 @@ export default class LeftPanel extends React.Component {
     .then( (response) => {
       if (response.data.length > 0) {
             let contents = response.data
-            let contentsFilter = contents.filter((elem)=> !this.state.hiddenCards.includes(elem.contenidos[0].identificador) )
+            //let contentsFilter = contents.filter((elem)=> !this.state.hiddenCards.includes(elem.contenidos[0].identificador) )
             //let index = contentsFilter.indexOf(this.props.manager.getContentById(idContent))
             //contents = contentsFilter.splice(index,1)
-            this.props.manager.setContents(contentsFilter);
+            this.props.changeContents(contents);
       }
       this.setState({
         selectedItem:value
@@ -54,11 +54,10 @@ export default class LeftPanel extends React.Component {
 
 
   onContentDragStart(event,content){
-    event.dataTransfer.setData(JSON.stringify({idContent:content.contentId}), 'idContent');
+    event.dataTransfer.setData(JSON.stringify({contentId:content.contentId}), 'contentId');
     event.dataTransfer.setData(JSON.stringify({identificador:content.identificador}), 'identificador');
-    event.dataTransfer.setData(JSON.stringify({category:content.categoria}), 'category');
-    event.dataTransfer.setData(JSON.stringify({navegable:content.available}), 'isNavegable');      
-    // let dragged = event.target;
+    event.dataTransfer.setData(JSON.stringify({categoria:content.categoria}), 'categoria');
+    event.dataTransfer.setData(JSON.stringify({isNavegable:content.available}), 'isNavegable');      
   }
 
   generateStyles(index){
@@ -79,7 +78,6 @@ export default class LeftPanel extends React.Component {
     const TabPane = Tabs.TabPane;
     const {Option} = Select
     const styles = this.generateStyles()
-
     return(
       <div className="no-assigned__cards__container">
         <Tabs>
@@ -106,26 +104,28 @@ export default class LeftPanel extends React.Component {
               </div>
             }
             
-            {this.props.manager.getContents().map((datos) =>
+            {this.props.contents.map((datos) =>
               datos.contenidos.map( (content,index) => 
                 <div
                 key={index} 
                 onDragStart={(e) => this.onContentDragStart(e,content)} 
                 onDragEnd={(e) => this.onContentDragEnd(e,content)}
                 >
-                  <MultiCard  
-                    identificador={content.identificador} 
-                    categoria={content.categoria}
-                    cantidad={content.siblingsId ? content.siblingsId.length : null}
-                    available={content.available} 
-                  />
+                  {!this.state.hiddenCards.find(hiddenCard => hiddenCard === content.identificador) &&
+                    <MultiCard  
+                      identificador={content.identificador} 
+                      categoria={content.categoria}
+                      cantidad={content.siblingsId ? content.siblingsId.length : null}
+                      available={content.available} 
+                    />
+                  }
                 </div>
               )
             )}
           </TabPane>
           <TabPane tab="Fluxs" key="2">
               <FluxTab 
-                manager={this.props.manager}
+                fluxes={this.props.fluxes}
                 addFluxToDiagram={this.props.addFluxToDiagram}  
               />
           </TabPane>          
