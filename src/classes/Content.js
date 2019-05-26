@@ -1,6 +1,6 @@
 export default class Content {
 
-  constructor(name, idContent, category){
+  constructor(name, idContent, category, data){
     this.name = name;
     this.idContent = idContent
     this.category = category
@@ -32,6 +32,14 @@ export default class Content {
 
   setCategory(category){
     this.category = category;
+  }
+
+  getData(){
+    return this.data
+  }  
+
+  setData(data){
+    this.data = data;
   }
 
 }

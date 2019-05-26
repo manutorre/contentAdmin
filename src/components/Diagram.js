@@ -88,10 +88,10 @@ export default class GoJs extends Component {
         doubleClick: function(e, node) {
             // node is the Node that was double-clicked
             let data = node.data;
-            let identificador = data.identificador
+            let key = data.key
             handlerThis.setState({
               modalNodeVisible:true,
-              temporaryContent:identificador
+              temporaryContent:key
             })
         }
       },
@@ -124,10 +124,10 @@ export default class GoJs extends Component {
       {
         doubleClick: function(e, link) {
             // node is the Node that was double-clicked
-            let identificador = link.toNode.data.identificador;
+            let key = link.toNode.data.key;
             handlerThis.setState({
               modalLinkVisible:true,
-              temporaryLink:identificador
+              temporaryLink:key
             })
         }
       },
@@ -156,7 +156,10 @@ export default class GoJs extends Component {
         this.setState({keyForRerender:Math.random()})
       }
       else{
-        this.state.flux.removeContent(ev.subject.first().part.data.identificador)
+        this.state.flux.removeContent(ev.subject.first().part.data.key)
+        this.state.flux.removeLinkWithOrigin(ev.subject.first().part.data.key)
+        this.state.flux.removeLinkWithDestination(ev.subject.first().part.data.key)
+        this.setState({keyForRerender:Math.random()})
       }
     })
     this.setModelAndDiagram(model, diagram)
@@ -173,7 +176,20 @@ export default class GoJs extends Component {
             loading:true
         })
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
-        if(this.state.showSend){
+        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend).then(() => {
+          this.setState({loading:false,success:"success", showSend:false})
+          this.state.myDiagram.div = null;
+        })
+        .catch((error) => {
+          error.response && error.response.data ? 
+          this.setState({loading:false,error:error.response.data}, this.setState({error:null}))
+          :
+          console.log(error)
+        })
+        this.setState({
+          modalVisible:false,
+        })
+        /* if(this.state.showSend){
           axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
             this.setState({loading:false,success:"success",showSend:false})
             this.state.myDiagram.div = null;
@@ -184,21 +200,8 @@ export default class GoJs extends Component {
             :
             console.log(error)
           })
-        }else{
-          axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend).then(() => {
-            this.setState({loading:false,success:"success"})
-            this.state.myDiagram.div = null;
-          })
-          .catch((error) => {
-            error.response && error.response.data ? 
-            this.setState({loading:false,error:error.response.data})
-            :
-            console.log(error)
-          })
-        }
-    this.setState({
-      modalVisible:false,
-    })
+        }else{ */
+        /* } */
   }
   
   setModelAndDiagram(model, diagram){
@@ -297,7 +300,9 @@ export default class GoJs extends Component {
     console.log(this.isNotInDiagram(content))
     if (this.isNotInDiagram(content)) {
       if (this.state.flux === null) {
-        this.setState({flux: new Flux('new flux', [content])})
+        let newFlux = new Flux('new flux');
+        newFlux.addContent(content)
+        this.setState({flux: newFlux})
       }
       else{
         this.state.flux.addContent(content)
@@ -383,21 +388,10 @@ export default class GoJs extends Component {
 
   confirmNodeModal = () =>{
     //Asociar nodo con info del modal: meter en un array toda la info de los nodos, cada uno con un identificador del nodo
-    let contentNode = this.state.temporaryContent //idContent del nodo
-    let contents = this.state.contents
-    let indice = null 
-    this.state.contents.map((cont,index)=>{
-      if(cont.identificador === contentNode)
-        indice = index
-    })
-    if(contents[indice].data) 
-    	contents[indice].data.read = this.state.valueRadioNode
-    else
-    	contents[indice].data = {"read":this.state.valueRadioNode}
-
+    let contentNode = this.state.temporaryContent //name del nodo
+    this.state.flux.getContentByName(contentNode).setData({read:this.state.valueRadioNode})
     this.setState({
       modalNodeVisible:false,
-      contents:contents,
       temporaryContent:null,
       valueRadioNode:null
     })
@@ -406,27 +400,13 @@ export default class GoJs extends Component {
   confirmLinkModal = () =>{
     //Asociar link con info del modal: meter en un array toda la info de los links, cada uno con un id del link
     let contentNode = this.state.temporaryLink //link.destination
-    let contents = this.state.contents
-    let indice = null 
-    this.state.contents.map((cont,index)=>{
-      if(cont.identificador === contentNode)
-        indice = index
+    this.state.flux.getContentByName(contentNode).setData({
+      metainfo:this.state.inputValueText,
+      next:this.state.valueRadioLink
     })
-    if(contents[indice].data){ 
-    	contents[indice].data.metainfo = this.state.inputValueText
-    	contents[indice].data.next = this.state.valueRadioLink
-    }
-    else{
-    	contents[indice].data = {
-    		"metainfo":this.state.inputValueText, 
-    		"next":this.state.valueRadioLink
-    	}
-    }
-
     this.setState({
       modalLinkVisible:false,
       inputValueText:null,
-      contents:contents,
       temporaryLink:null
   	})
   }

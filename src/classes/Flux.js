@@ -7,6 +7,7 @@ export default class Flux {
     this.name = name;
     this.contents = contents ? contents.map(content => new FluxContent(content.identificador, content.contentId, content.categoria, content.order)) : [];
     this.links = links ? links : []
+    return this;
   }
 
   addLink(link){
@@ -34,7 +35,7 @@ export default class Flux {
   }
 
   removeContent(identificador){
-    this.setContents(this.contents.filter(content => content.identificador !== identificador))
+    this.setContents(this.contents.filter(content => content.getName().toLowerCase() !== identificador.toLowerCase()))
   }
 
 
@@ -59,6 +60,14 @@ export default class Flux {
   removeLinkWithOriginAndDestination(from, to){
     this.setLinks(this.links.filter(link => !(link.origin === from && link.destination === to)))
   }
+
+  removeLinkWithOrigin(from){
+    this.setLinks(this.links.filter(link => link.origin !== from))
+  }
+
+  removeLinkWithDestination(to){
+    this.setLinks(this.links.filter(link => link.destination !== to))
+  }  
 
   addLinkWithOriginAndDestination(from, to){
     this.addLink(new Link(from, to))
@@ -91,7 +100,7 @@ export default class Flux {
     let orderedContents = [firstContent]
     this.links.map( link => {
       let auxLink = this.getLinkWithOrigin(nextContent);
-      nextContent = this.getContentById(auxLink.destination);
+      nextContent = this.getContentByName(auxLink.destination);
       orderedContents.push(nextContent);
     })
     return orderedContents;    
@@ -108,7 +117,7 @@ export default class Flux {
     return this.links.filter(link => link.origin.toLowerCase() === content.getName().toLowerCase())[0]
   }
 
-  getContentById(contentId){
+  getContentByName(contentId){
     return this.contents.filter(content => content.getName().toLowerCase() === contentId.toLowerCase())[0]
   }
 
