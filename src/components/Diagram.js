@@ -172,19 +172,24 @@ export default class GoJs extends Component {
 
   sendData(){
         let contents = this.state.flux.getOrderedContentsFromLinks()
-        this.setState({
-            loading:true
-        })
+        this.setState({loading:true})
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
-        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend).then(() => {
-          this.setState({loading:false,success:"success", showSend:false})
-          this.state.myDiagram.div = null;
+        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend)
+        .then(() => {this.setState({
+          loading:false,success:"success", showSend:false})
         })
         .catch((error) => {
-          error.response && error.response.data ? 
-          this.setState({loading:false,error:error.response.data}, this.setState({error:null}))
-          :
-          console.log(error)
+          if (error.response && error.response.data) {
+            this.setState({
+              loading:false,
+              error:error.response.data
+            }, this.setState({
+              error:null
+            }))
+          }
+          else{
+            console.log(error)
+          }
         })
         this.setState({
           modalVisible:false,
@@ -238,8 +243,7 @@ export default class GoJs extends Component {
 
 
   doesLinkApplies(link, oldContents){ //if the new link is related with any of the previous contents, then it should not be added
-    return !oldContents.some( content => link.origin.toLowerCase() === content.getName().toLowerCase() || 
-                                        link.destination.toLowerCase() === content.getName().toLowerCase() )
+    return !oldContents.some( content => link.origin.toLowerCase() === content.getName().toLowerCase() ||  link.destination.toLowerCase() === content.getName().toLowerCase() )
   }
 
   addContentToGoJsDiagram(content, fluxName, point){ //creates the content in the apps diagram
@@ -399,9 +403,65 @@ export default class GoJs extends Component {
   	})
   }
 
-  render () {
-    const {Option} = Select
-    const Panel = Collapse.Panel;
+  nodeModal(){
+    const radioStyle = {
+      display: 'block',
+      height: '30px',
+      lineHeight: '30px',
+    };
+    const RadioGroup = Radio.Group;
+    return(
+      <Modal
+        title="Node"
+        centered = {true}
+        visible={this.state.modalNodeVisible}
+        onOk={this.confirmNodeModal}
+        onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
+        <div>
+          <p>Reading:</p>
+          <Checkbox onChange={this.onChangeCheckNode}>
+              'Ask for browse'
+          </Checkbox>
+          <br></br>
+          <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
+            <Radio style={radioStyle} value={"Title"}>Only title</Radio>
+            <Radio style={radioStyle} value={"All"}>Title,introduction and content</Radio>
+          </RadioGroup>
+        </div>             
+      </Modal>
+    )
+  }
+
+  linkModal(){
+    const RadioGroup = Radio.Group;
+    const radioStyle = {
+      display: 'block',
+      height: '30px',
+      lineHeight: '30px',
+    };
+    return(
+      <Modal
+      title="Link"
+      visible={this.state.modalLinkVisible}
+      onOk={this.confirmLinkModal}
+      onCancel={() => this.setState({modalLinkVisible:false})}>
+      <div>
+        <p>How to continue?</p>
+        <Checkbox onChange={this.onChangeCheckLink}>
+            Read text previosly
+            {this.state.valueCheck === true ? <Input placeholder="Insert text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
+        </Checkbox>
+        <br></br>
+        <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
+          <Radio style={radioStyle} value={"Read directly"}>Read the next content directly</Radio>
+          <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
+        </RadioGroup>
+      </div>
+    </Modal>
+    )
+  }
+  
+  submitModal(){
     const customPanelStyle = {
       background: '#f7f7f7',
       borderRadius: 4,
@@ -410,126 +470,61 @@ export default class GoJs extends Component {
       overflow: 'hidden',
       marginTop:"20px"
     };
-    
-    const RadioGroup = Radio.Group;
-    const radioStyle = {
-      display: 'block',
-      height: '30px',
-      lineHeight: '30px',
-    };
-    console.log(this.state.flux)
+    const {Option} = Select
+    const {Panel} = Collapse;
     return(
-      
+      <Modal
+        title="Confirm your action"
+        visible={this.state.modalVisible}
+        onOk={this.sendData}
+        onCancel={() => this.setState({modalVisible:false})}>
+          <div>
+            Please, enter a name for the set of contents to send
+            <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}></Input> 
+            <p> Select a content reading pattern </p>
+            <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
+              {this.state.patterns.map( (pattern, index) => 
+                <Option 
+                  key={index}   
+                  value={pattern}>
+                    {pattern}
+                </Option>
+              )}
+            </Select>
+            { this.state.pattern &&
+              <Collapse bordered={false} defaultActiveKey={['1']} expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>}>                
+                <Panel header={this.state.pattern} key="1" style={customPanelStyle}>
+                  <p style={{ paddingLeft: 24 }}> {this.state.infoPatterns[this.state.index]} </p>
+                </Panel>
+              </Collapse>
+            }
+          </div>
+      </Modal>
+    )
+  }  
+
+  render () {
+    console.log(this.state.flux)
+    const goJsStyle = {'width': '116%','height': '874px', 'backgroundColor': "white",'marginLeft':"-16%"}
+    return(
       <div>
-        {this.state.loading && 
-          <div className="example">
-            <Spin className="diagram-spin" size="large"/>
-          </div>
-        }
-        <div 
-        onDragEnter={this.onDiagramEnter} 
-        className="diagram"
-        onDrop={this.onDiagramDrop}
-        onDragOver={this.onDragOver}
-        >
-          <div  ref="goJsDiv" style={{
-              'width': '116%',
-              'height': '874px', 
-              'backgroundColor': "white",
-              'marginLeft':"-16%"
-            }}>
-          </div>
+        {this.state.loading && <div className="example"><Spin className="diagram-spin" size="large"/></div>}
+        <div onDragEnter={this.onDiagramEnter}  className="diagram" onDrop={this.onDiagramDrop} onDragOver={this.onDragOver}>
+          <div  ref="goJsDiv" style={goJsStyle}></div>
         </div>
-
-        <div className="sendButtonContainer">
-          {(this.state.success)? this.success() : null }
-
-          <Button className="sendButton" 
-          onClick={this.showSendDataModal} 
-          key={this.state.keyForRerender}
+        <div className="sendButtonContainer">{ this.state.success ? this.success() : null }
+          <Button 
+          className="sendButton"         
+          onClick={this.showSendDataModal} key={this.state.keyForRerender} 
           disabled={!this.state.flux || (this.state.flux && this.state.flux.contents.length !== (this.state.flux.links.length + 1))}> 
             Deploy to skill 
           </Button>
-          
-          {(this.state.error)? this.error() : null}
-      </div>
-      <div>
-          <Modal
-            title="Node"
-            centered = {true}
-            visible={this.state.modalNodeVisible}
-            onOk={this.confirmNodeModal}
-            onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
-            <div>
-              <p>Reading:</p>
-              <Checkbox onChange={this.onChangeCheckNode}>
-                   'Ask for browse'
-              </Checkbox>
-              <br></br>
-              <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
-                <Radio style={radioStyle} value={"Title"}>Only title</Radio>
-                <Radio style={radioStyle} value={"All"}>Title,introduction and content</Radio>
-              </RadioGroup>
-            </div>             
-          </Modal>
-      </div>
-      <div>
-          <Modal
-            title="Link"
-            visible={this.state.modalLinkVisible}
-            onOk={this.confirmLinkModal}
-            onCancel={() => this.setState({modalLinkVisible:false})}>
-            <div>
-              <p>How to continue?</p>
-              <Checkbox onChange={this.onChangeCheckLink}>
-                  Read text previosly
-                  {this.state.valueCheck === true ? <Input placeholder="Insert text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
-              </Checkbox>
-              <br></br>
-              <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
-                <Radio style={radioStyle} value={"Read directly"}>Read the next content directly</Radio>
-                <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
-              </RadioGroup>
-            </div>
-          </Modal>
-      </div>
-
-        <Modal
-          title="Confirm your action"
-          visible={this.state.modalVisible}
-          onOk={this.sendData}
-          onCancel={() => this.setState({modalVisible:false})}>
-            <div>
-              Please, enter a name for the set of contents to send
-              <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}>
-              </Input> 
-              <p> Select a content reading pattern </p>
-              <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" 
-            onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
-              {this.state.patterns.map( (pattern, index) => {
-                return(
-                  <Option 
-                    key={index}   
-                    value={pattern}>
-                      {pattern}
-                  </Option>
-                )
-              })}
-              </Select>
-              { this.state.pattern &&
-              <Collapse bordered={false} defaultActiveKey={['1']}
-              expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>} 
-              >                
-                  <Panel header={this.state.pattern} key="1" style={customPanelStyle}>
-                    <p style={{ paddingLeft: 24 }}> {this.state.infoPatterns[this.state.index]} </p>
-                  </Panel>
-              </Collapse>
-              }
-            </div>
-        </Modal>
+          {this.state.error && this.error()}
+        </div>
+        {this.nodeModal()}
+        {this.linkModal()}
+        {this.submitModal()}
       </div>
     ) 
   }
 }
-
-GoJs.defaultProps = { data: '[]' };
