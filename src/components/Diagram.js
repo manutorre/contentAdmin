@@ -232,54 +232,54 @@ export default class GoJs extends Component {
     return new DroppableContent(content.identificador, content.contentid, content.categoria, content.isnavegable ) 
   }
 
-  isNotInDiagram(content){
-    let flag = false;
-    let isAlreadyInDiagram = this.state.addedContents.filter( addedContent => {
-      return JSON.stringify(addedContent.getIdContent()) === JSON.stringify(content.getIdContent())
-    }).length > 0
-    if (!isAlreadyInDiagram) {
-      flag = true
-    }
-    return flag;
+  isNotInDiagram(content){ //if the content is not in the diagram
+    return !this.state.addedContents.some(addedContent => JSON.stringify(addedContent.getIdContent()) === JSON.stringify(content.getIdContent()))
   }
 
 
-  doesLinkApplies(link, oldContents){
-    return oldContents.filter( content => link.origin.toLowerCase() === content.getName().toLowerCase() || link.destination.toLowerCase() === content.getName().toLowerCase() )
-      .length === 0
+  doesLinkApplies(link, oldContents){ //if the new link is related with any of the previous contents, then it should not be added
+    return !oldContents.some( content => link.origin.toLowerCase() === content.getName().toLowerCase() || 
+                                        link.destination.toLowerCase() === content.getName().toLowerCase() )
   }
+
+  addContentToGoJsDiagram(content, fluxName, point){ //creates the content in the apps diagram
+    this.state.myDiagram.startTransaction('new node');
+    this.state.myDiagram.model.addNodeData({
+      key:content.getName(),
+      location:point,
+      identificador:fluxName !== "" ? fluxName + " - " + content.getName() : content.getName(),
+      color:go.Brush.randomColor()}
+      )
+      this.state.myDiagram.commitTransaction('new node');
+  }
+
+  addLinkToGoJsDiagram(link){ //creates the link in the apps diagram
+    this.state.myDiagram.startTransaction('new link');
+    this.state.myDiagram.model.addLinkDataCollection([{
+      from:link.origin,
+      to:link.destination
+    }])
+    this.state.myDiagram.commitTransaction('new link');
+  }
+
 
   addContentsManually(flux){
     let newFlux = new Flux(flux.name);
-    let diagram = this.state.myDiagram
     const oldContents = this.state.addedContents
     flux.getOrderedContentsFromOrderField().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
         newFlux.addContent(content)
-        diagram.startTransaction('new node');
-        let point = diagram.transformViewToDoc(new go.Point(300 + i * 100 , 100 + (i * 100)));
-        diagram.model.addNodeData({
-          key:content.getName(),
-          location:point,
-          identificador:flux.name + " - " + content.getName(),
-          color:go.Brush.randomColor()}
-          )
-          diagram.commitTransaction('new node');
-          this.setState(prevState => ({
-            addedContents:[...prevState.addedContents, content]
-          }))
+        let point = this.state.myDiagram.transformViewToDoc(new go.Point(300 + i * 100 , 100 + (i * 100)));
+        this.addContentToGoJsDiagram(content,flux.name,point) //adds the content to the actual Diagram
+        this.setState(prevState => ({
+          addedContents:[...prevState.addedContents, content]
+        }))
       }
     })
     flux.getOrderedLinksFromContentsOrder().map(link => {
       if (this.doesLinkApplies(link,oldContents)) {
-        console.log(link)
+        this.addLinkToGoJsDiagram(link)
         newFlux.addLink(link)
-        diagram.startTransaction('new link');
-        diagram.model.addLinkDataCollection([{
-          from:link.origin,
-          to:link.destination
-        }])
-        diagram.commitTransaction('new link');
       }
     })
     if (this.state.flux) {
@@ -288,55 +288,43 @@ export default class GoJs extends Component {
     }
     this.setState({
       flux:newFlux,
-      myDiagram:diagram,
-      myModel:diagram.model,
       inputValue:flux.name
     })
   }
 
-
+  calculateDroppedPoint(event){
+    window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
+    let pixelratio = window.PIXELRATIO;
+    let can = event.target;
+    // if the target is not the canvas, we may have trouble, so just quit:
+    if (!(can instanceof HTMLCanvasElement)) return;
+    var bbox = can.getBoundingClientRect();
+    var bbw = bbox.width;
+    if (bbw === 0) bbw = 0.001;
+    var bbh = bbox.height;
+    if (bbh === 0) bbh = 0.001;
+    var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
+    var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
+    return this.state.myDiagram.transformViewToDoc(new go.Point(mx, my));
+  }
+  
+  
   onDiagramDrop(event){
     let content = this.getDroppableContent(event.dataTransfer.items)
-    console.log(this.isNotInDiagram(content))
-    if (this.isNotInDiagram(content)) {
-      if (this.state.flux === null) {
+    if (this.isNotInDiagram(content)) { 
+      if (this.state.flux === null) { //if a flux is not being edited in the application
         let newFlux = new Flux('new flux');
         newFlux.addContent(content)
         this.setState({flux: newFlux})
       }
-      else{
+      else{ //if there is already a flux being edited
         this.state.flux.addContent(content)
       }
-      window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
-      let pixelratio = window.PIXELRATIO;
-      let can = event.target;
-  
-      // if the target is not the canvas, we may have trouble, so just quit:
-      if (!(can instanceof HTMLCanvasElement)) return;
-      let diagram = this.state.myDiagram
-      var bbox = can.getBoundingClientRect();
-      var bbw = bbox.width;
-      if (bbw === 0) bbw = 0.001;
-      var bbh = bbox.height;
-      if (bbh === 0) bbh = 0.001;
-      var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
-      var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
-      var point = diagram.transformViewToDoc(new go.Point(mx, my));
-      diagram.startTransaction('new node')
+      let point = this.calculateDroppedPoint(event); //calculates the drop event point
       let {contents} = this.state
       contents.push(content)
       this.setState({contents})    
-      diagram.model.addNodeData({
-        location: point,
-        identificador: content.getName(),
-        color:go.Brush.randomColor(),
-        key:content.getName() //key is the same as identificador
-      });
-      diagram.commitTransaction('new node');
-      this.setState({
-        myDiagram:diagram,
-        myModel:diagram.model
-      })
+      this.addContentToGoJsDiagram(content, "", point) //inserts the content in the diagram
       this.setState(prevState => ({
         addedContents:[...prevState.addedContents, content]
       }))
