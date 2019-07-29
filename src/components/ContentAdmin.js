@@ -4,7 +4,6 @@ import LeftPanel from './LeftPanel'
 // import RightPanel from './RightPanel'
 import Diagram from './Diagram'
 import axios from 'axios'
-import ContentsManager from '../classes/ContentsManager'
 import Flux from '../classes/Flux'
 
 export default class ContentAdmin extends React.Component{
@@ -18,7 +17,6 @@ export default class ContentAdmin extends React.Component{
       contents:[],
       fluxes:[]
     }
-    this.contentsManager = new ContentsManager();
     this.changeContents = this.changeContents.bind(this)
     this.addFluxToDiagram = this.addFluxToDiagram.bind(this)
   }

@@ -88,10 +88,10 @@ export default class GoJs extends Component {
         doubleClick: function(e, node) {
             // node is the Node that was double-clicked
             let data = node.data;
-            let identificador = data.identificador
+            let key = data.key
             handlerThis.setState({
               modalNodeVisible:true,
-              temporaryContent:identificador
+              temporaryContent:key
             })
         }
       },
@@ -124,10 +124,10 @@ export default class GoJs extends Component {
       {
         doubleClick: function(e, link) {
             // node is the Node that was double-clicked
-            let identificador = link.toNode.data.identificador;
+            let key = link.toNode.data.key;
             handlerThis.setState({
               modalLinkVisible:true,
-              temporaryLink:identificador
+              temporaryLink:key
             })
         }
       },
@@ -156,7 +156,10 @@ export default class GoJs extends Component {
         this.setState({keyForRerender:Math.random()})
       }
       else{
-        this.state.flux.removeContent(ev.subject.first().part.data.identificador)
+        this.state.flux.removeContent(ev.subject.first().part.data.key)
+        this.state.flux.removeLinkWithOrigin(ev.subject.first().part.data.key)
+        this.state.flux.removeLinkWithDestination(ev.subject.first().part.data.key)
+        this.setState({keyForRerender:Math.random()})
       }
     })
     this.setModelAndDiagram(model, diagram)
@@ -169,11 +172,29 @@ export default class GoJs extends Component {
 
   sendData(){
         let contents = this.state.flux.getOrderedContentsFromLinks()
-        this.setState({
-            loading:true
-        })
+        this.setState({loading:true})
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
-        if(this.state.showSend){
+        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend)
+        .then(() => {this.setState({
+          loading:false,success:"success", showSend:false})
+        })
+        .catch((error) => {
+          if (error.response && error.response.data) {
+            this.setState({
+              loading:false,
+              error:error.response.data
+            }, this.setState({
+              error:null
+            }))
+          }
+          else{
+            console.log(error)
+          }
+        })
+        this.setState({
+          modalVisible:false,
+        })
+        /* if(this.state.showSend){
           axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
             this.setState({loading:false,success:"success",showSend:false})
             this.state.myDiagram.div = null;
@@ -184,21 +205,8 @@ export default class GoJs extends Component {
             :
             console.log(error)
           })
-        }else{
-          axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend).then(() => {
-            this.setState({loading:false,success:"success"})
-            this.state.myDiagram.div = null;
-          })
-          .catch((error) => {
-            error.response && error.response.data ? 
-            this.setState({loading:false,error:error.response.data})
-            :
-            console.log(error)
-          })
-        }
-    this.setState({
-      modalVisible:false,
-    })
+        }else{ */
+        /* } */
   }
   
   setModelAndDiagram(model, diagram){
@@ -229,54 +237,53 @@ export default class GoJs extends Component {
     return new DroppableContent(content.identificador, content.contentid, content.categoria, content.isnavegable ) 
   }
 
-  isNotInDiagram(content){
-    let flag = false;
-    let isAlreadyInDiagram = this.state.addedContents.filter( addedContent => {
-      return JSON.stringify(addedContent.getIdContent()) === JSON.stringify(content.getIdContent())
-    }).length > 0
-    if (!isAlreadyInDiagram) {
-      flag = true
-    }
-    return flag;
+  isNotInDiagram(content){ //if the content is not in the diagram
+    return !this.state.addedContents.some(addedContent => JSON.stringify(addedContent.getIdContent()) === JSON.stringify(content.getIdContent()))
   }
 
 
-  doesLinkApplies(link, oldContents){
-    return oldContents.filter( content => link.origin.toLowerCase() === content.getName().toLowerCase() || link.destination.toLowerCase() === content.getName().toLowerCase() )
-      .length === 0
+  doesLinkApplies(link, oldContents){ //if the new link is related with any of the previous contents, then it should not be added
+    return !oldContents.some( content => link.origin.toLowerCase() === content.getName().toLowerCase() ||  link.destination.toLowerCase() === content.getName().toLowerCase() )
   }
+
+  addContentToGoJsDiagram(content, fluxName, point){ //creates the content in the apps diagram
+    this.state.myDiagram.startTransaction('new node');
+    this.state.myDiagram.model.addNodeData({
+      key:content.getName(),
+      location:point,
+      identificador:fluxName !== "" ? fluxName + " - " + content.getName() : content.getName(),
+      color:go.Brush.randomColor()}
+      )
+      this.state.myDiagram.commitTransaction('new node');
+  }
+
+  addLinkToGoJsDiagram(link){ //creates the link in the apps diagram
+    this.state.myDiagram.startTransaction('new link');
+    this.state.myDiagram.model.addLinkDataCollection([{
+      from:link.origin,
+      to:link.destination
+    }])
+    this.state.myDiagram.commitTransaction('new link');
+  }
+
 
   addContentsManually(flux){
     let newFlux = new Flux(flux.name);
-    let diagram = this.state.myDiagram
     const oldContents = this.state.addedContents
     flux.getOrderedContentsFromOrderField().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
         newFlux.addContent(content)
-        diagram.startTransaction('new node');
-        let point = diagram.transformViewToDoc(new go.Point(300 + i * 100 , 100 + (i * 100)));
-        diagram.model.addNodeData({
-          key:content.getName(),
-          location:point,
-          identificador:flux.name + " - " + content.getName(),
-          color:go.Brush.randomColor()}
-          )
-          diagram.commitTransaction('new node');
-          this.setState(prevState => ({
-            addedContents:[...prevState.addedContents, content]
-          }))
+        let point = this.state.myDiagram.transformViewToDoc(new go.Point(300 + i * 100 , 100 + (i * 100)));
+        this.addContentToGoJsDiagram(content,flux.name,point) //adds the content to the actual Diagram
+        this.setState(prevState => ({
+          addedContents:[...prevState.addedContents, content]
+        }))
       }
     })
     flux.getOrderedLinksFromContentsOrder().map(link => {
       if (this.doesLinkApplies(link,oldContents)) {
-        console.log(link)
+        this.addLinkToGoJsDiagram(link)
         newFlux.addLink(link)
-        diagram.startTransaction('new link');
-        diagram.model.addLinkDataCollection([{
-          from:link.origin,
-          to:link.destination
-        }])
-        diagram.commitTransaction('new link');
       }
     })
     if (this.state.flux) {
@@ -285,53 +292,43 @@ export default class GoJs extends Component {
     }
     this.setState({
       flux:newFlux,
-      myDiagram:diagram,
-      myModel:diagram.model,
       inputValue:flux.name
     })
   }
 
-
+  calculateDroppedPoint(event){
+    window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
+    let pixelratio = window.PIXELRATIO;
+    let can = event.target;
+    // if the target is not the canvas, we may have trouble, so just quit:
+    if (!(can instanceof HTMLCanvasElement)) return;
+    var bbox = can.getBoundingClientRect();
+    var bbw = bbox.width;
+    if (bbw === 0) bbw = 0.001;
+    var bbh = bbox.height;
+    if (bbh === 0) bbh = 0.001;
+    var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
+    var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
+    return this.state.myDiagram.transformViewToDoc(new go.Point(mx, my));
+  }
+  
+  
   onDiagramDrop(event){
     let content = this.getDroppableContent(event.dataTransfer.items)
-    console.log(this.isNotInDiagram(content))
-    if (this.isNotInDiagram(content)) {
-      if (this.state.flux === null) {
-        this.setState({flux: new Flux('new flux', [content])})
+    if (this.isNotInDiagram(content)) { 
+      if (this.state.flux === null) { //if a flux is not being edited in the application
+        let newFlux = new Flux('new flux');
+        newFlux.addContent(content)
+        this.setState({flux: newFlux})
       }
-      else{
+      else{ //if there is already a flux being edited
         this.state.flux.addContent(content)
       }
-      window.PIXELRATIO = this.state.myDiagram.computePixelRatio();
-      let pixelratio = window.PIXELRATIO;
-      let can = event.target;
-  
-      // if the target is not the canvas, we may have trouble, so just quit:
-      if (!(can instanceof HTMLCanvasElement)) return;
-      let diagram = this.state.myDiagram
-      var bbox = can.getBoundingClientRect();
-      var bbw = bbox.width;
-      if (bbw === 0) bbw = 0.001;
-      var bbh = bbox.height;
-      if (bbh === 0) bbh = 0.001;
-      var mx = event.clientX - bbox.left * ((can.width/pixelratio) / bbw);
-      var my = event.clientY - bbox.top * ((can.height/pixelratio) / bbh);
-      var point = diagram.transformViewToDoc(new go.Point(mx, my));
-      diagram.startTransaction('new node')
+      let point = this.calculateDroppedPoint(event); //calculates the drop event point
       let {contents} = this.state
       contents.push(content)
       this.setState({contents})    
-      diagram.model.addNodeData({
-        location: point,
-        identificador: content.getName(),
-        color:go.Brush.randomColor(),
-        key:content.getName() //key is the same as identificador
-      });
-      diagram.commitTransaction('new node');
-      this.setState({
-        myDiagram:diagram,
-        myModel:diagram.model
-      })
+      this.addContentToGoJsDiagram(content, "", point) //inserts the content in the diagram
       this.setState(prevState => ({
         addedContents:[...prevState.addedContents, content]
       }))
@@ -385,21 +382,10 @@ export default class GoJs extends Component {
 
   confirmNodeModal = () =>{
     //Asociar nodo con info del modal: meter en un array toda la info de los nodos, cada uno con un identificador del nodo
-    let contentNode = this.state.temporaryContent //idContent del nodo
-    let contents = this.state.contents
-    let indice = null 
-    this.state.contents.map((cont,index)=>{
-      if(cont.identificador === contentNode)
-        indice = index
-    })
-    if(contents[indice].data) 
-    	contents[indice].data.read = this.state.valueRadioNode
-    else
-    	contents[indice].data = {"read":this.state.valueRadioNode}
-
+    let contentNode = this.state.temporaryContent //name del nodo
+    this.state.flux.getContentByName(contentNode).setData({read:this.state.valueRadioNode})
     this.setState({
       modalNodeVisible:false,
-      contents:contents,
       temporaryContent:null,
       valueRadioNode:null
     })
@@ -408,34 +394,76 @@ export default class GoJs extends Component {
   confirmLinkModal = () =>{
     //Asociar link con info del modal: meter en un array toda la info de los links, cada uno con un id del link
     let contentNode = this.state.temporaryLink //link.destination
-    let contents = this.state.contents
-    let indice = null 
-    this.state.contents.map((cont,index)=>{
-      if(cont.identificador === contentNode)
-        indice = index
+    this.state.flux.getContentByName(contentNode).setData({
+      metainfo:this.state.inputValueText,
+      next:this.state.valueRadioLink
     })
-    if(contents[indice].data){ 
-    	contents[indice].data.metainfo = this.state.inputValueText
-    	contents[indice].data.next = this.state.valueRadioLink
-    }
-    else{
-    	contents[indice].data = {
-    		"metainfo":this.state.inputValueText, 
-    		"next":this.state.valueRadioLink
-    	}
-    }
-
     this.setState({
       modalLinkVisible:false,
       inputValueText:null,
-      contents:contents,
       temporaryLink:null
   	})
   }
 
-  render () {
-    const {Option} = Select
-    const Panel = Collapse.Panel;
+  nodeModal(){
+    const radioStyle = {
+      display: 'block',
+      height: '30px',
+      lineHeight: '30px',
+    };
+    const RadioGroup = Radio.Group;
+    return(
+      <Modal
+        title="Node"
+        centered = {true}
+        visible={this.state.modalNodeVisible}
+        onOk={this.confirmNodeModal}
+        onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
+        <div>
+          <p>Reading:</p>
+          <Checkbox onChange={this.onChangeCheckNode}>
+              'Ask for browse'
+          </Checkbox>
+          <br></br>
+          <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
+            <Radio style={radioStyle} value={"Title"}>Only title</Radio>
+            <Radio style={radioStyle} value={"All"}>Title,introduction and content</Radio>
+          </RadioGroup>
+        </div>             
+      </Modal>
+    )
+  }
+
+  linkModal(){
+    const RadioGroup = Radio.Group;
+    const radioStyle = {
+      display: 'block',
+      height: '30px',
+      lineHeight: '30px',
+    };
+    return(
+      <Modal
+      title="Link"
+      visible={this.state.modalLinkVisible}
+      onOk={this.confirmLinkModal}
+      onCancel={() => this.setState({modalLinkVisible:false})}>
+      <div>
+        <p>How to continue?</p>
+        <Checkbox onChange={this.onChangeCheckLink}>
+            Read text previosly
+            {this.state.valueCheck === true ? <Input placeholder="Insert text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
+        </Checkbox>
+        <br></br>
+        <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
+          <Radio style={radioStyle} value={"Read directly"}>Read the next content directly</Radio>
+          <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
+        </RadioGroup>
+      </div>
+    </Modal>
+    )
+  }
+  
+  submitModal(){
     const customPanelStyle = {
       background: '#f7f7f7',
       borderRadius: 4,
@@ -444,126 +472,61 @@ export default class GoJs extends Component {
       overflow: 'hidden',
       marginTop:"20px"
     };
-    
-    const RadioGroup = Radio.Group;
-    const radioStyle = {
-      display: 'block',
-      height: '30px',
-      lineHeight: '30px',
-    };
-    console.log(this.state.flux)
+    const {Option} = Select
+    const {Panel} = Collapse;
     return(
-      
+      <Modal
+        title="Confirm your action"
+        visible={this.state.modalVisible}
+        onOk={this.sendData}
+        onCancel={() => this.setState({modalVisible:false})}>
+          <div>
+            Please, enter a name for the set of contents to send
+            <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}></Input> 
+            <p> Select a content reading pattern </p>
+            <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
+              {this.state.patterns.map( (pattern, index) => 
+                <Option 
+                  key={index}   
+                  value={pattern}>
+                    {pattern}
+                </Option>
+              )}
+            </Select>
+            { this.state.pattern &&
+              <Collapse bordered={false} defaultActiveKey={['1']} expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>}>                
+                <Panel header={this.state.pattern} key="1" style={customPanelStyle}>
+                  <p style={{ paddingLeft: 24 }}> {this.state.infoPatterns[this.state.index]} </p>
+                </Panel>
+              </Collapse>
+            }
+          </div>
+      </Modal>
+    )
+  }  
+
+  render () {
+    console.log(this.state.flux)
+    const goJsStyle = {'width': '116%','height': '874px', 'backgroundColor': "white",'marginLeft':"-16%"}
+    return(
       <div>
-        {this.state.loading && 
-          <div className="example">
-            <Spin className="diagram-spin" size="large"/>
-          </div>
-        }
-        <div 
-        onDragEnter={this.onDiagramEnter} 
-        className="diagram"
-        onDrop={this.onDiagramDrop}
-        onDragOver={this.onDragOver}
-        >
-          <div  ref="goJsDiv" style={{
-              'width': '116%',
-              'height': '874px', 
-              'backgroundColor': "white",
-              'marginLeft':"-16%"
-            }}>
-          </div>
+        {this.state.loading && <div className="example"><Spin className="diagram-spin" size="large"/></div>}
+        <div onDragEnter={this.onDiagramEnter}  className="diagram" onDrop={this.onDiagramDrop} onDragOver={this.onDragOver}>
+          <div  ref="goJsDiv" style={goJsStyle}></div>
         </div>
-
-        <div className="sendButtonContainer">
-          {(this.state.success)? this.success() : null }
-
-          <Button className="sendButton" 
-          onClick={this.showSendDataModal} 
-          key={this.state.keyForRerender}
+        <div className="sendButtonContainer">{ this.state.success ? this.success() : null }
+          <Button 
+          className="sendButton"         
+          onClick={this.showSendDataModal} key={this.state.keyForRerender} 
           disabled={!this.state.flux || (this.state.flux && this.state.flux.contents.length !== (this.state.flux.links.length + 1))}> 
             Deploy to skill 
           </Button>
-          
-          {(this.state.error)? this.error() : null}
-      </div>
-      <div>
-          <Modal
-            title="Node"
-            centered = {true}
-            visible={this.state.modalNodeVisible}
-            onOk={this.confirmNodeModal}
-            onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
-            <div>
-              <p>Reading:</p>
-              <Checkbox onChange={this.onChangeCheckNode}>
-                   'Ask for browse'
-              </Checkbox>
-              <br></br>
-              <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
-                <Radio style={radioStyle} value={"Title"}>Only title</Radio>
-                <Radio style={radioStyle} value={"All"}>Title,introduction and content</Radio>
-              </RadioGroup>
-            </div>             
-          </Modal>
-      </div>
-      <div>
-          <Modal
-            title="Link"
-            visible={this.state.modalLinkVisible}
-            onOk={this.confirmLinkModal}
-            onCancel={() => this.setState({modalLinkVisible:false})}>
-            <div>
-              <p>How to continue?</p>
-              <Checkbox onChange={this.onChangeCheckLink}>
-                  Read text previosly
-                  {this.state.valueCheck === true ? <Input placeholder="Insert text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
-              </Checkbox>
-              <br></br>
-              <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
-                <Radio style={radioStyle} value={"Read directly"}>Read the next content directly</Radio>
-                <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
-              </RadioGroup>
-            </div>
-          </Modal>
-      </div>
-
-        <Modal
-          title="Confirm your action"
-          visible={this.state.modalVisible}
-          onOk={this.sendData}
-          onCancel={() => this.setState({modalVisible:false})}>
-            <div>
-              Please, enter a name for the set of contents to send
-              <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}>
-              </Input> 
-              <p> Select a content reading pattern </p>
-              <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" 
-            onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
-              {this.state.patterns.map( (pattern, index) => {
-                return(
-                  <Option 
-                    key={index}   
-                    value={pattern}>
-                      {pattern}
-                  </Option>
-                )
-              })}
-              </Select>
-              { this.state.pattern &&
-              <Collapse bordered={false} defaultActiveKey={['1']}
-              expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>} 
-              >                
-                  <Panel header={this.state.pattern} key="1" style={customPanelStyle}>
-                    <p style={{ paddingLeft: 24 }}> {this.state.infoPatterns[this.state.index]} </p>
-                  </Panel>
-              </Collapse>
-              }
-            </div>
-        </Modal>
+          {this.state.error && this.error()}
+        </div>
+        {this.nodeModal()}
+        {this.linkModal()}
+        {this.submitModal()}
       </div>
     ) 
   }
 }
-
-GoJs.defaultProps = { data: '[]' };
