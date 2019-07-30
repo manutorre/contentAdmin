@@ -4,6 +4,7 @@ export default class Content {
     this.name = name;
     this.idContent = idContent
     this.category = category
+    this.metadata = {}
   }
 
   getName(){
@@ -39,7 +40,8 @@ export default class Content {
   }  
 
   setData(data){
-    this.data = data;
+    var keys = Object.keys(data)
+    keys.map( k => this.metadata[k] = data[k] )
   }
 
 }
