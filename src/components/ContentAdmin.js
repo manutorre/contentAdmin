@@ -70,7 +70,7 @@ export default class ContentAdmin extends React.Component{
           }
         </Sider>
         <Layout>
-          <Header style={{color:"white",fontSize:"20px"}}>Skill contents administrator</Header>
+          <Header style={{color:"white",fontSize:"20px"}}>Administrador de contenidos del Skill</Header>
           <Content>
             <Diagram
               shouldShowFlux={this.state.showFluxContent}

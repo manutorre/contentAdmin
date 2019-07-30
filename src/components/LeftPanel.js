@@ -81,11 +81,11 @@ export default class LeftPanel extends React.Component {
     return(
       <div className="no-assigned__cards__container">
         <Tabs>
-          <TabPane tab="Contents" key="1">
+          <TabPane tab="Contenidos" key="1">
             {this.props.categories.length > 0 &&
               <div>
-              <h3 style={{color:"white",left:"10px"}}> Filter by category </h3>
-              <Select value={this.state.selectedItem? this.state.selectedItem : undefined}  placeholder="Category" 
+              <h3 style={{color:"white",left:"10px"}}> Filtrar por categoria </h3>
+              <Select value={this.state.selectedItem? this.state.selectedItem : undefined}  placeholder="Categoria" 
                   onChange={(e) =>this.selectCategory(e)} style={styles}>
                   {this.props.categories.map( (category, index) => {
                     return(
@@ -123,7 +123,7 @@ export default class LeftPanel extends React.Component {
               )
             )}
           </TabPane>
-          <TabPane tab="Fluxs" key="2">
+          <TabPane tab="Flujos" key="2">
               <FluxTab 
                 fluxes={this.props.fluxes}
                 addFluxToDiagram={this.props.addFluxToDiagram}  

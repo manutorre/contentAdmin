@@ -28,7 +28,7 @@ export default class FluxTab extends React.Component{
     return(
       <Modal
         key={flux.name}
-        title={"Contents of flux - " + flux.name}
+        title={"Contenidos del flujo - " + flux.name}
         visible={true}
         onCancel={() => this.setState({modalVisible:false})}
       >
@@ -40,7 +40,7 @@ export default class FluxTab extends React.Component{
           onClick={() => this.addFluxToDiagram(flux)}
           disabled={this.state.fluxInDiagram[flux.name]}
         >
-          Edit
+          Editar
         </Button>
       </Modal>
     )

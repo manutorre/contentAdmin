@@ -35,9 +35,9 @@ export default class GoJs extends Component {
       pattern:null,
       index:null,
       addedContents:[],
-      patterns:["Read only titles","Read introduction and content"],//,"Read paragraph to paragraph"
-      infoPatterns:["Only the titles of the contents defined in the flow will be read continuously."
-      ,"The titles of the defined contents will be read one at a time, giving the possibility to choose to read an introduction and then the rest of the content."
+      patterns:["Leer solo titulos","Leer introduccion y contenido"],//,"Read paragraph to paragraph"
+      infoPatterns:["Solo se leeran los titulos de los contenidos definidos para el flujo."
+      ,"Se leeran los titulos de los contenidos definidos de a uno por vez, dando la posibilidad de elegir entre leer solo una introduccion o tambien el resto del contenido."
       ] //,"The body of the contents will be read paragraph by paragraph."
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
@@ -65,13 +65,13 @@ export default class GoJs extends Component {
   handlePattern(pattern){
     var index;
     switch(pattern){
-      case "Read only titles":
+      case "Leer solo titulos":
         index = 0
       break;
-      case "Read introduction and content":
+      case "Leer introduccion y contenido":
         index = 1
       break;
-      case "Read paragraph to paragraph":
+      case "Leer parrafo a parrafo":
         index = 2
       break;
     }
@@ -343,13 +343,13 @@ export default class GoJs extends Component {
   }
 
   success = () => {
-    message.success('A new flow was created!', 3 , function(){
+    message.success('Se ha creado un nuevo flujo!', 3 , function(){
       window.location.reload()
     });   
   };
 
   error = () => {
-    message.error('An error occurred when trying to create a new flow', 3);
+    message.error('Ocurrio un error al intentar crear un nuevo flujo', 3);
   };
   
   onChangeInput(e){
@@ -414,20 +414,20 @@ export default class GoJs extends Component {
     const RadioGroup = Radio.Group;
     return(
       <Modal
-        title="Node"
+        title="Nodo"
         centered = {true}
         visible={this.state.modalNodeVisible}
         onOk={this.confirmNodeModal}
         onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
         <div>
-          <p>Reading:</p>
+          <p>Opciones de Lectura:</p>
           <Checkbox onChange={this.onChangeCheckNode}>
-              'Ask for browse'
+              'Preguntar antes para poder navegar'
           </Checkbox>
           <br></br>
           <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
-            <Radio style={radioStyle} value={"Title"}>Only title</Radio>
-            <Radio style={radioStyle} value={"All"}>Title,introduction and content</Radio>
+            <Radio style={radioStyle} value={"Title"}>Solo titulo</Radio>
+            <Radio style={radioStyle} value={"All"}>Titulo, introduccion y contenido</Radio>
           </RadioGroup>
         </div>             
       </Modal>
@@ -448,15 +448,15 @@ export default class GoJs extends Component {
       onOk={this.confirmLinkModal}
       onCancel={() => this.setState({modalLinkVisible:false})}>
       <div>
-        <p>How to continue?</p>
+        <p>Como continuar la lectura de contenidos?</p>
         <Checkbox onChange={this.onChangeCheckLink}>
-            Read text previosly
-            {this.state.valueCheck === true ? <Input placeholder="Insert text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
+            Leer texto previo al contenido
+            {this.state.valueCheck === true ? <Input placeholder="Ingresar texto" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
         </Checkbox>
         <br></br>
         <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
-          <Radio style={radioStyle} value={"Read directly"}>Read the next content directly</Radio>
-          <Radio style={radioStyle} value={"Ask"}>Ask for reading next</Radio>
+          <Radio style={radioStyle} value={"Read directly"}>Leer directamente el proximo contenido</Radio>
+          <Radio style={radioStyle} value={"Ask"}>Preguntar antes de leer el proximo contenido</Radio>
         </RadioGroup>
       </div>
     </Modal>
@@ -476,15 +476,15 @@ export default class GoJs extends Component {
     const {Panel} = Collapse;
     return(
       <Modal
-        title="Confirm your action"
+        title="Confirmar accion"
         visible={this.state.modalVisible}
         onOk={this.sendData}
         onCancel={() => this.setState({modalVisible:false})}>
           <div>
-            Please, enter a name for the set of contents to send
+            Por favor, ingrese un nombre para el conjunto de contenidos a enviar
             <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}></Input> 
-            <p> Select a content reading pattern </p>
-            <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Content reading pattern" onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
+            <p> Seleccionar un patron de lectura de contenidos </p>
+            <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Patron de lectura" onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
               {this.state.patterns.map( (pattern, index) => 
                 <Option 
                   key={index}   
@@ -519,7 +519,7 @@ export default class GoJs extends Component {
           className="sendButton"         
           onClick={this.showSendDataModal} key={this.state.keyForRerender} 
           disabled={!this.state.flux || (this.state.flux && this.state.flux.contents.length !== (this.state.flux.links.length + 1))}> 
-            Deploy to skill 
+            Deployar el skill 
           </Button>
           {this.state.error && this.error()}
         </div>
