@@ -60,6 +60,13 @@ export default class LeftPanel extends React.Component {
     event.dataTransfer.setData(JSON.stringify({isNavegable:content.available}), 'isNavegable');      
   }
 
+  onContentClick(event,content){
+    //modificar el campo available del content en la base
+
+    //abrir en una nueva pestaña la url del contenido
+    window.open(content.url, "_blank")
+  }
+
   generateStyles(index){
     return(
       {
@@ -104,24 +111,24 @@ export default class LeftPanel extends React.Component {
               </div>
             }
             
-            {this.props.contents.map((datos) =>
-              datos.contenidos.map( (content,index) => 
+            {this.props.contents.map((content,index) =>
                 <div
                 key={index} 
-                onDragStart={(e) => this.onContentDragStart(e,content)} 
-                onDragEnd={(e) => this.onContentDragEnd(e,content)}
+                onDragStart={(e) => this.onContentDragStart(e,content.contenidos)} 
+                onDragEnd={(e) => this.onContentDragEnd(e,content.contenidos)}
+                onClick = {(e) => this.onContentClick(e,content.contenidos)}
                 >
-                  {!this.state.hiddenCards.find(hiddenCard => hiddenCard === content.identificador) &&
+                  {!this.state.hiddenCards.find(hiddenCard => hiddenCard === content.contenidos.identificador) &&
                     <MultiCard  
-                      identificador={content.identificador} 
-                      categoria={content.categoria}
-                      cantidad={content.siblingsId ? content.siblingsId.length : null}
-                      available={content.available} 
+                      identificador={content.contenidos.identificador} 
+                      categoria={content.contenidos.categoria}
+                      cantidad={content.contenidos.siblingsId ? content.contenidos.siblingsId.length : null}
+                      available={content.contenidos.available} 
                     />
                   }
                 </div>
-              )
-            )}
+              
+          )}
           </TabPane>
           <TabPane tab="Flujos" key="2">
               <FluxTab 
