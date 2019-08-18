@@ -9,6 +9,7 @@ export default class LeftPanel extends React.Component {
   constructor(props){
       super(props)
       this.state = {
+        contentChanged:false,
         selectedItem:"",
         hiddenCards:[]
       }
@@ -61,10 +62,15 @@ export default class LeftPanel extends React.Component {
   }
 
   onContentClick(event,content){
-    //modificar el campo available del content en la base
+    
+    axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable/gonza", 
+      { data: content },function(data){
+        console.log(data)
+      });
 
     //abrir en una nueva pestaña la url del contenido
     window.open(content.url, "_blank")
+    window.location.reload()
   }
 
   generateStyles(index){
