@@ -57,18 +57,18 @@ export default class FluxTab extends React.Component{
   render(){
     return(
       <div>
-        {this.props.fluxes.map( (flux,i) =>
-          <div key={i}> 
-            {this.state.modalVisible[i] && this.renderModal(flux)}
-            <MultiCard
-              disabled={this.state.fluxInDiagram[flux.name]}
-              onClick={() => this.showContents(i)}
-              flux={true}
-              key={i}
-              identificador={flux.name}
-            />
-          </div>
-        )}
+          {this.props.fluxes != null && this.props.fluxes.map( (flux,i) =>
+            <div key={i}> 
+              {this.state.modalVisible[i] && this.renderModal(flux)}
+              <MultiCard
+                disabled={this.state.fluxInDiagram[flux.name]}
+                onClick={() => this.showContents(i)}
+                flux={true}
+                key={i}
+                identificador={flux.name}
+              />
+            </div>
+          )}
       </div>
     )
   }
