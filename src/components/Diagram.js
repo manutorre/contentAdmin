@@ -381,7 +381,6 @@ export default class GoJs extends Component {
   }
 
   confirmNodeModal = () =>{
-    //Asociar nodo con info del modal: meter en un array toda la info de los nodos, cada uno con un identificador del nodo
     let contentNode = this.state.temporaryContent //name del nodo
     this.state.flux.getContentByName(contentNode).setData({pattern:this.state.valueRadioNode})
     this.setState({
@@ -392,7 +391,6 @@ export default class GoJs extends Component {
   }
 
   confirmLinkModal = () =>{
-    //Asociar link con info del modal: meter en un array toda la info de los links, cada uno con un id del link
     let contentNode = this.state.temporaryLink //link.destination
     this.state.flux.getContentByName(contentNode).setData({
       metaInfo:this.state.inputValueText,

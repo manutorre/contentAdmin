@@ -63,14 +63,15 @@ export default class LeftPanel extends React.Component {
 
   onContentClick(event,content){
     
-    axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable/gonza", 
-      { data: content },function(data){
-        console.log(data)
+    if (!content.available){
+      axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable/"
+      ,{ params: { name: "gonza", id:content.contentId }},function(data){
+          console.log(data)
+          //abrir en una nueva pestaña la url del contenido
+          window.open(content.url, "_blank")
+          window.location.reload()
       });
-
-    //abrir en una nueva pestaña la url del contenido
-    window.open(content.url, "_blank")
-    window.location.reload()
+    }
   }
 
   generateStyles(index){
@@ -128,7 +129,7 @@ export default class LeftPanel extends React.Component {
                     <MultiCard  
                       identificador={content.contenidos.identificador} 
                       categoria={content.contenidos.categoria}
-                      cantidad={content.contenidos.siblingsId ? content.contenidos.siblingsId.length : null}
+                      cantidad={content.contenidos.contentId ? content.contenidos.contentId.length : null}
                       available={content.contenidos.available} 
                     />
                   }
