@@ -424,7 +424,7 @@ export default class GoJs extends Component {
           </Checkbox>
           <br></br>
           <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
-            <Radio style={radioStyle} value={"Title"}>Solo titulo</Radio>
+            <Radio style={radioStyle} value={"OnlyTitle"}>Solo titulo</Radio>
             <Radio style={radioStyle} value={"All"}>Titulo, introduccion y contenido</Radio>
           </RadioGroup>
         </div>             
