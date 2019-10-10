@@ -43,7 +43,7 @@ export default class MultiCard extends React.Component{
   generateFluxCard(){
     const { Meta } = Card;
     const title = this.props.identificador;
-    const description = "Flujo";
+    const description = "Grupo";
     return(
         <Card 
           style={fluxCard}>

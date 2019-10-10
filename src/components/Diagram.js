@@ -36,7 +36,7 @@ export default class GoJs extends Component {
       index:null,
       addedContents:[],
       patterns:["Leer solo titulos","Leer introduccion y contenido"],//,"Read paragraph to paragraph"
-      infoPatterns:["Solo se leeran los titulos de los contenidos definidos para el flujo."
+      infoPatterns:["Solo se leeran los titulos de los contenidos definidos para el grupo."
       ,"Se leeran los titulos de los contenidos definidos de a uno por vez, dando la posibilidad de elegir entre leer solo una introduccion o tambien el resto del contenido."
       ] //,"The body of the contents will be read paragraph by paragraph."
     }
@@ -343,13 +343,13 @@ export default class GoJs extends Component {
   }
 
   success = () => {
-    message.success('Se ha creado un nuevo flujo!', 3 , function(){
+    message.success('Se ha creado un nuevo grupo de contenidos!', 3 , function(){
       window.location.reload()
     });   
   };
 
   error = () => {
-    message.error('Ocurrio un error al intentar crear un nuevo flujo', 3);
+    message.error('Ocurrio un error al intentar crear un nuevo grupo de contenidos', 3);
   };
   
   onChangeInput(e){

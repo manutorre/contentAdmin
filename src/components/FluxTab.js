@@ -28,7 +28,7 @@ export default class FluxTab extends React.Component{
     return(
       <Modal
         key={flux.name}
-        title={"Contenidos del flujo - " + flux.name}
+        title={"Contenidos del grupo - " + flux.name}
         visible={true}
         onCancel={() => this.setState({modalVisible:false})}
       >
