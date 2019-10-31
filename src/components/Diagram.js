@@ -17,7 +17,6 @@ export default class GoJs extends Component {
       flux:null,
       temporaryContent:null,
       temporaryLink:null,
-      valueRadioLink:null,
       valueRadioNode:null,
       valueCheck:false,
       modalLinkVisible:false,
@@ -171,10 +170,12 @@ export default class GoJs extends Component {
   }
 
   sendData(){
+        var username = window.localStorage.getItem('Username')
+
         let contents = this.state.flux.getOrderedContentsFromLinks()
         this.setState({loading:true})
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
-        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/gonza', contentsToSend)
+        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/'+username, contentsToSend)
         .then(() => {this.setState({
           loading:false,success:"success", showSend:false})
         })
@@ -342,6 +343,14 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
+  window.addEventListener('beforeunload', function (e) {  
+    window.localStorage.removeItem('Username')
+    // Cancel the event
+    e.preventDefault();
+    // Chrome requires returnValue to be set
+    e.returnValue = '';
+  });
+
   success = () => {
     message.success('Se ha creado un nuevo grupo de contenidos!', 3 , function(){
       window.location.reload()
@@ -360,11 +369,6 @@ export default class GoJs extends Component {
     this.setState({inputValueText:e.target.value})
   }
 
-  onChangeRadioLink = (e) =>{
-    this.setState({
-      valueRadioLink:e.target.value
-    })
-  }
   
   onChangeRadioNode = (e) =>{
     this.setState({
@@ -372,8 +376,6 @@ export default class GoJs extends Component {
     })
   }
 
-  onChangeCheckNode = (checkedValue) => {
-  }
   onChangeCheckLink = (checkedValue) => {
     this.setState({
       valueCheck:checkedValue.target.checked
@@ -419,10 +421,6 @@ export default class GoJs extends Component {
         onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
         <div>
           <p>Opciones de Lectura:</p>
-          <Checkbox onChange={this.onChangeCheckNode}>
-              'Preguntar antes para poder navegar'
-          </Checkbox>
-          <br></br>
           <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
             <Radio style={radioStyle} value={"OnlyTitle"}>Solo titulo</Radio>
             <Radio style={radioStyle} value={"All"}>Titulo, introduccion y contenido</Radio>
@@ -451,11 +449,6 @@ export default class GoJs extends Component {
             Leer texto previo al contenido
             {this.state.valueCheck === true ? <Input placeholder="Ingresar texto" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
         </Checkbox>
-        <br></br>
-        <RadioGroup onChange={this.onChangeRadioLink} value={this.state.valueRadioLink}>
-          <Radio style={radioStyle} value={"Read directly"}>Leer directamente el proximo contenido</Radio>
-          <Radio style={radioStyle} value={"Ask"}>Preguntar antes de leer el proximo contenido</Radio>
-        </RadioGroup>
       </div>
     </Modal>
     )

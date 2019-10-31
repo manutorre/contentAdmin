@@ -22,14 +22,15 @@ export default class ContentAdmin extends React.Component{
   }
 
   componentDidMount(){
-    axios.get("https://alexa-apirest.herokuapp.com/users/categories/gonza").then( (response) => {
+    var username = window.localStorage.getItem('Username')
+    axios.get("https://alexa-apirest.herokuapp.com/users/categories/"+username).then( (response) => {
       if (response.data.length > 0) this.setState({categories:response.data}) 
     });
 
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByFirstCategory/gonza").then( (response) => {
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByFirstCategory/"+username).then( (response) => {
       if (response.data.length > 0) this.setState({contents:response.data})  
     });
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsAndFlows/gonza").then( (response) => {
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsAndFlows/"+username).then( (response) => {
       let fluxes;
       if (response.data.length > 0) {
         fluxes = response.data.map(flux => {

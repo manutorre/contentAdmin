@@ -16,8 +16,10 @@ export default class LeftPanel extends React.Component {
   }
 
   selectCategory(value){
+    var username = window.localStorage.getItem('Username')
+
     console.log(value)
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value+"/gonza")
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value+"/"+username)
     .then( (response) => {
       if (response.data.length > 0) {
             let contents = response.data
@@ -32,7 +34,8 @@ export default class LeftPanel extends React.Component {
     });
   }
 
-  onContentDragEnd(event,content){ 
+  onContentDragEnd(event,content){
+    var username = window.localStorage.getItem('Username') 
     if(event.dataTransfer.dropEffect !== 'none'){
       //event.target.parentNode.style.display = "none"
       var hiddenCards = this.state.hiddenCards
@@ -48,7 +51,7 @@ export default class LeftPanel extends React.Component {
         if(this.props.categories.length > 0)
           this.selectCategory(this.props.categories[0]) 
         else
-          this.selectCategory(axios.get("https://alexa-apirest.herokuapp.com/users/getFirstCategory/gonza")) 
+          this.selectCategory(axios.get("https://alexa-apirest.herokuapp.com/users/getFirstCategory/"+username)) 
       } 
     } 
   }
@@ -62,10 +65,10 @@ export default class LeftPanel extends React.Component {
   }
 
   onContentClick(event,content){
-    
+    var username = window.localStorage.getItem('Username')
     if (!content.available){
       axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable/"
-      ,{ params: { name: "gonza", id:content.contentId }},function(data){
+      ,{ params: { name: username, id:content.contentId }},function(data){
           console.log(data)
           //abrir en una nueva pestaña la url del contenido
           window.open(content.url, "_blank")
