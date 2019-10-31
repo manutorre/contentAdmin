@@ -343,13 +343,15 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  window.addEventListener('beforeunload', function (e) {  
-    window.localStorage.removeItem('Username')
-    // Cancel the event
-    e.preventDefault();
-    // Chrome requires returnValue to be set
-    e.returnValue = '';
-  });
+  componentDidMount() {
+    window.addEventListener('beforeunload', function (e) {  
+      window.localStorage.removeItem('Username')
+      /* Cancel the event
+      e.preventDefault();
+      // Chrome requires returnValue to be set
+      e.returnValue = '';*/
+    })
+  }
 
   success = () => {
     message.success('Se ha creado un nuevo grupo de contenidos!', 3 , function(){
