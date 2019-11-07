@@ -16,10 +16,11 @@ export default class LeftPanel extends React.Component {
   }
 
   selectCategory(value){
-    var username = window.localStorage.getItem('Username')
+    //var username = (new URL(window.location.href)).searchParams.get('username')
+
 
     console.log(value)
-    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value+"/"+username)
+    axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value)
     .then( (response) => {
       if (response.data.length > 0) {
             let contents = response.data
@@ -35,7 +36,8 @@ export default class LeftPanel extends React.Component {
   }
 
   onContentDragEnd(event,content){
-    var username = window.localStorage.getItem('Username') 
+    //var username = (new URL(window.location.href)).searchParams.get('username')
+
     if(event.dataTransfer.dropEffect !== 'none'){
       //event.target.parentNode.style.display = "none"
       var hiddenCards = this.state.hiddenCards
@@ -51,7 +53,7 @@ export default class LeftPanel extends React.Component {
         if(this.props.categories.length > 0)
           this.selectCategory(this.props.categories[0]) 
         else
-          this.selectCategory(axios.get("https://alexa-apirest.herokuapp.com/users/getFirstCategory/"+username)) 
+          this.selectCategory(axios.get("https://alexa-apirest.herokuapp.com/users/getFirstCategory")) 
       } 
     } 
   }
@@ -65,10 +67,11 @@ export default class LeftPanel extends React.Component {
   }
 
   onContentClick(event,content){
-    var username = window.localStorage.getItem('Username')
+    //var username = (new URL(window.location.href)).searchParams.get('username')
+
     if (!content.available){
-      axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable/"
-      ,{ params: { name: username, id:content.contentId }},function(data){
+      axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable"
+      ,{ params: { id:content.contentId }},function(data){
           console.log(data)
           //abrir en una nueva pestaña la url del contenido
           window.open(content.url, "_blank")

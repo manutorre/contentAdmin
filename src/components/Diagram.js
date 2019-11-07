@@ -170,12 +170,11 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-        var username = window.localStorage.getItem('Username')
-
+        //var username = (new URL(window.location.href)).searchParams.get('username')
         let contents = this.state.flux.getOrderedContentsFromLinks()
         this.setState({loading:true})
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
-        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow/user/'+username, contentsToSend)
+        axios.post('https://alexa-apirest.herokuapp.com/users/createFlow', contentsToSend)
         .then(() => {this.setState({
           loading:false,success:"success", showSend:false})
         })
@@ -343,15 +342,6 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  componentDidMount() {
-    window.addEventListener('beforeunload', function (e) {  
-      window.localStorage.removeItem('Username')
-      /* Cancel the event
-      e.preventDefault();
-      // Chrome requires returnValue to be set
-      e.returnValue = '';*/
-    })
-  }
 
   success = () => {
     message.success('Se ha creado un nuevo grupo de contenidos!', 3 , function(){
