@@ -19,10 +19,6 @@ export default class Content {
     return this.category
   }
 
-  getIsNavegable(){
-    return this.isNavegable
-  }  
-
   setName(name){
     this.name = name;
   }
@@ -42,6 +38,10 @@ export default class Content {
   setData(data){
     var keys = Object.keys(data)
     keys.map( k => this.metadata[k] = data[k] )
+  }
+
+  hasName(name) {
+    return this.getName.toLowerCase() === name.toLowerCase();
   }
 
 }

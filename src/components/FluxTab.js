@@ -32,7 +32,7 @@ export default class FluxTab extends React.Component{
         visible={true}
         onCancel={() => this.setState({modalVisible:false})}
       >
-        {flux.getOrderedContentsFromOrderField().map( (content,i) => 
+        {flux.getOrderedContents().map( (content,i) => 
           <div key={i}>{content.getName()}</div>
         )}
         <Button 

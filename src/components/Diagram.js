@@ -171,7 +171,8 @@ export default class GoJs extends Component {
 
   sendData(){
         //var username = (new URL(window.location.href)).searchParams.get('username')
-        let contents = this.state.flux.getOrderedContentsFromLinks()
+        this.state.flux.changeState('rendered');
+        let contents = this.state.flux.getOrderedContents();
         this.setState({loading:true})
         let contentsToSend = {nombreConjunto:this.state.inputValue, pattern:this.state.pattern, contents:contents}
         axios.post('https://alexa-apirest.herokuapp.com/users/createFlow', contentsToSend)
@@ -194,19 +195,6 @@ export default class GoJs extends Component {
         this.setState({
           modalVisible:false,
         })
-        /* if(this.state.showSend){
-          axios.put('https://alexa-apirest.herokuapp.com/users/updateFlow/user/gonza', contentsToSend).then(() => {
-            this.setState({loading:false,success:"success",showSend:false})
-            this.state.myDiagram.div = null;
-          })
-          .catch((error) => {
-            error.response && error.response.data ? 
-            this.setState({loading:false,error:error.response.data})
-            :
-            console.log(error)
-          })
-        }else{ */
-        /* } */
   }
   
   setModelAndDiagram(model, diagram){
@@ -270,7 +258,7 @@ export default class GoJs extends Component {
   addContentsManually(flux){
     let newFlux = new Flux(flux.name);
     const oldContents = this.state.addedContents
-    flux.getOrderedContentsFromOrderField().map( (content, i) => {
+    flux.getOrderedContents().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
         newFlux.addContent(content)
         let point = this.state.myDiagram.transformViewToDoc(new go.Point(300 + i * 100 , 100 + (i * 100)));
