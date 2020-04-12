@@ -41,7 +41,7 @@ export default class Content {
   }
 
   hasName(name) {
-    return this.getName.toLowerCase() === name.toLowerCase();
+    return this.getName().toLowerCase() === name.toLowerCase();
   }
 
 }

@@ -75,11 +75,10 @@ export default class Flux {
   }
 
   getOrderedContents(){
-    this.state.getOrderedContents(this.contents, this.links)
+    return this.state.getOrderedContents(this.contents, this.links)
   }
 
   getOrderedLinksFromContentsOrder(){
-    this.state.getContents(this.contents, this.links);
     let links = []
     this.getOrderedContents().map( (content,i) => {
       if (this.getOrderedContents()[i + 1]) {
