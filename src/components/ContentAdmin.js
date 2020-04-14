@@ -4,7 +4,7 @@ import LeftPanel from './LeftPanel'
 // import RightPanel from './RightPanel'
 import Diagram from './Diagram'
 import axios from 'axios'
-import Flux from '../classes/Flux'
+import Flow from '../classes/Flow'
 
 export default class ContentAdmin extends React.Component{
 
@@ -35,7 +35,7 @@ export default class ContentAdmin extends React.Component{
       let fluxes;
       if (response.data.length > 0) {
         fluxes = response.data.map(flux => {
-          return new Flux(flux._id, flux.contenidos)
+          return new Flow(flux._id, flux.contenidos)
         })
       }
       this.setState({fluxes})  

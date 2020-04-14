@@ -1,7 +1,7 @@
 import RenderedState from './RenderedState'
 import ImportedState from './ImportedState'
 
-export default class FluxState {
+export default class FlowState {
     constructor(state){
         switch (state) {
             case 'rendered':

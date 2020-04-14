@@ -1,5 +1,5 @@
 import Content from './Content'
-export default class FluxContent extends Content {
+export default class FlowContent extends Content {
     constructor(name, idContent, category, order){
         super(name, idContent, category)
         this.order = order

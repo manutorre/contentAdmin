@@ -24,9 +24,6 @@ export default class LeftPanel extends React.Component {
     .then( (response) => {
       if (response.data.length > 0) {
             let contents = response.data
-            //let contentsFilter = contents.filter((elem)=> !this.state.hiddenCards.includes(elem.contenidos[0].identificador) )
-            //let index = contentsFilter.indexOf(this.props.manager.getContentById(idContent))
-            //contents = contentsFilter.splice(index,1)
             this.props.changeContents(contents);
       }
       this.setState({

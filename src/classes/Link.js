@@ -21,4 +21,16 @@ export default class Link {
     this.destination = content;
   }
 
+  hasOrigin(origin){
+    return this.origin.toLowerCase() === origin.toLowerCase();
+  }
+
+  hasDestination(destination){
+    return this.destination.toLowerCase() === destination.toLowerCase();
+  }
+
+  hasOriginAndDestination(origin, destination) {
+    return this.hasOrigin(origin) && this.hasDestination(destination)
+  }
+
 }

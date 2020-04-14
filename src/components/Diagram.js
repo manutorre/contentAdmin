@@ -2,9 +2,9 @@ import React, {Component} from 'react';
 import go from 'gojs';
 import {Button, Spin, Modal, Input, Select, Collapse, Icon, message,Checkbox, Radio} from 'antd'
 import axios from 'axios'
-import FluxContent from '../classes/FluxContent';
+import FlowContent from '../classes/FlowContent';
 import DroppableContent from '../classes/DroppableContent';
-import Flux from '../classes/Flux';
+import Flow from '../classes/Flow';
 const goObj = go.GraphObject.make;
 
 export default class GoJs extends Component {
@@ -212,8 +212,8 @@ export default class GoJs extends Component {
     event.preventDefault();
   }
 
-  getFluxContent(content){
-    return new FluxContent(content.identificador, content.contentId, content.categoria, content.order)
+  getFlowContent(content){
+    return new FlowContent(content.identificador, content.contentId, content.categoria, content.order)
   }
 
   getDroppableContent(properties){ //crea el content object
@@ -256,7 +256,7 @@ export default class GoJs extends Component {
 
 
   addContentsManually(flux){
-    let newFlux = new Flux(flux.name);
+    let newFlux = new Flow(flux.name);
     const oldContents = this.state.addedContents
     flux.getOrderedContents().map( (content, i) => {
       if (this.isNotInDiagram(content)) {
@@ -268,7 +268,7 @@ export default class GoJs extends Component {
         }))
       }
     })
-    flux.getOrderedLinksFromContentsOrder().map(link => {
+    flux.getOrderedLinks().map(link => {
       if (this.doesLinkApplies(link,oldContents)) {
         this.addLinkToGoJsDiagram(link)
         newFlux.addLink(link)
@@ -305,7 +305,7 @@ export default class GoJs extends Component {
     let content = this.getDroppableContent(event.dataTransfer.items)
     if (this.isNotInDiagram(content)) { 
       if (this.state.flux === null) { //if a flux is not being edited in the application
-        let newFlux = new Flux('new flux');
+        let newFlux = new Flow('new flow');
         newFlux.addContent(content)
         this.setState({flux: newFlux})
       }
