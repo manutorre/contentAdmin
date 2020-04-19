@@ -96,7 +96,9 @@ export default class Flow {
     this.state.changeState(state)
   }
 
-
+  getContentByName(name){
+    return this.contents.filter(content => content.hasName(name))
+  }
 
 
 }
