@@ -97,7 +97,7 @@ export default class Flow {
   }
 
   getContentByName(name){
-    return this.contents.filter(content => content.hasName(name))
+    return this.contents.filter(content => content.hasName(name))[0]
   }
 
 
