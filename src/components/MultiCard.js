@@ -13,8 +13,8 @@ export default class MultiCard extends React.Component{
 
   generateMultiCard(index){
     const { Meta } = Card;
-    const title = this.props.identificador //index === this.props.cantidad ? this.props.identificador : ""
-    const description = index === 2 ? (this.props.cantidad + " contenidos") : ""
+    const title = this.props.identificador 
+    const description = index === 2 ? (this.props.cantidad + " contents") : ""
     const styles = this.generateStyles(index)
     return(
       <Card key={index} style={styles}>
@@ -43,7 +43,7 @@ export default class MultiCard extends React.Component{
   generateFluxCard(){
     const { Meta } = Card;
     const title = this.props.identificador;
-    const description = "Grupo";
+    const description = "Skill";
     return(
         <Card 
           style={fluxCard}>

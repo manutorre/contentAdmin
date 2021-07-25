@@ -28,7 +28,7 @@ export default class FluxTab extends React.Component{
     return(
       <Modal
         key={flux.name}
-        title={"Contenidos del grupo - " + flux.name}
+        title={"Skill contents - " + flux.name}
         visible={true}
         onCancel={() => this.setState({modalVisible:false})}
       >
@@ -72,6 +72,4 @@ export default class FluxTab extends React.Component{
       </div>
     )
   }
-
-
 }

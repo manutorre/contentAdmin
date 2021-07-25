@@ -1,7 +1,6 @@
 import React from 'react'
 import {Layout} from 'antd'
 import LeftPanel from './LeftPanel'
-// import RightPanel from './RightPanel'
 import Diagram from './Diagram'
 import axios from 'axios'
 import Flow from '../classes/Flow'
@@ -22,8 +21,6 @@ export default class ContentAdmin extends React.Component{
   }
 
   componentDidMount(){
-    //var username = (new URL(window.location.href)).searchParams.get('username')
-
     axios.get("https://alexa-apirest.herokuapp.com/users/categories").then( (response) => {
       if (response.data.length > 0) this.setState({categories:response.data}) 
     });

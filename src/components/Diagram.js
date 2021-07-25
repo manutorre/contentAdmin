@@ -34,10 +34,9 @@ export default class GoJs extends Component {
       pattern:null,
       index:null,
       addedContents:[],
-      patterns:["Leer solo titulos","Leer introduccion y contenido"],//,"Read paragraph to paragraph"
-      infoPatterns:["Solo se leeran los titulos de los contenidos definidos para el grupo."
-      ,"Se leeran los titulos de los contenidos definidos de a uno por vez, dando la posibilidad de elegir entre leer solo una introduccion o tambien el resto del contenido."
-      ] //,"The body of the contents will be read paragraph by paragraph."
+      patterns:["Read paragraph by paragraph","Read a summary"],
+      infoPatterns:["If the text of the contents defined is long, it will be read paragraph by paragraph"
+      ,"If the text of the contents defined is long, will be read a summary of it"] 
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
     this.onDiagramDrop = this.onDiagramDrop.bind(this)
@@ -64,14 +63,11 @@ export default class GoJs extends Component {
   handlePattern(pattern){
     var index;
     switch(pattern){
-      case "Leer solo titulos":
+      case "Read paragraph by paragraph":
         index = 0
       break;
-      case "Leer introduccion y contenido":
+      case "Read a summary":
         index = 1
-      break;
-      case "Leer parrafo a parrafo":
-        index = 2
       break;
     }
 
@@ -170,7 +166,6 @@ export default class GoJs extends Component {
   }
 
   sendData(){
-        //var username = (new URL(window.location.href)).searchParams.get('username')
         this.state.flux.changeState('rendered');
         let contents = this.state.flux.getOrderedContents();
         this.setState({loading:true})
@@ -324,21 +319,19 @@ export default class GoJs extends Component {
   }
 
   onDragOver(event){
-    //-----FALTA CONTROLAR QUE NO SE PUEDA SOLTAR UN CONTENIDO INHABILITADO EN EL DIAGRAMA
-    //Agregar tmb un metodo para dar aviso al hacer un mouseOver sobre el contenido inhabilitado
     event.stopPropagation();
     event.preventDefault();
   }
 
 
   success = () => {
-    message.success('Se ha creado un nuevo grupo de contenidos!', 3 , function(){
+    message.success('A new skill was created!', 3 , function(){
       window.location.reload()
     });   
   };
 
   error = () => {
-    message.error('Ocurrio un error al intentar crear un nuevo grupo de contenidos', 3);
+    message.error('Some error occurred when trying to make a new skill', 3);
   };
   
   onChangeInput(e){
@@ -394,17 +387,20 @@ export default class GoJs extends Component {
     const RadioGroup = Radio.Group;
     return(
       <Modal
-        title="Nodo"
+        title="Node"
         centered = {true}
         visible={this.state.modalNodeVisible}
         onOk={this.confirmNodeModal}
         onCancel={() => this.setState({modalNodeVisible:false,valueRadioNode:null,temporaryContent:null})}>
         <div>
-          <p>Opciones de Lectura:</p>
-          <RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
-            <Radio style={radioStyle} value={"OnlyTitle"}>Solo titulo</Radio>
-            <Radio style={radioStyle} value={"All"}>Titulo, introduccion y contenido</Radio>
+          <p>Reading options:</p>
+          <Checkbox.Group options={['Title','Rating','Storyline']} defaultValue={['Title']} onChange={this.onChangeRadioNode} />
+          {/*<RadioGroup onChange={this.onChangeRadioNode} value={this.state.valueRadioNode}>
+            <Radio style={radioStyle} value={"OnlyTitle"}>Title</Radio>
+            <Radio style={radioStyle} value={"All"}>Rating</Radio>
+            <Radio style={radioStyle} value={"New"}>Storyline</Radio>
           </RadioGroup>
+        */}
         </div>             
       </Modal>
     )
@@ -424,11 +420,15 @@ export default class GoJs extends Component {
       onOk={this.confirmLinkModal}
       onCancel={() => this.setState({modalLinkVisible:false})}>
       <div>
-        <p>Como continuar la lectura de contenidos?</p>
+        <p>How to continue?</p>
         <Checkbox onChange={this.onChangeCheckLink}>
-            Leer texto previo al contenido
-            {this.state.valueCheck === true ? <Input placeholder="Ingresar texto" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
+            Read previous text
+            {this.state.valueCheck === true ? <Input placeholder="Text" onChange={this.onChangeInputText} style={{ width: 100, marginLeft: 10 }} /> : null}
         </Checkbox>
+        <RadioGroup onChange={this.onChangeRadioNode} value={1}>
+          <Radio style={radioStyle} value={1}>Read the next content directly</Radio>
+          <Radio style={radioStyle} value={2}>Ask for reading next</Radio>
+        </RadioGroup>
       </div>
     </Modal>
     )
@@ -447,15 +447,15 @@ export default class GoJs extends Component {
     const {Panel} = Collapse;
     return(
       <Modal
-        title="Confirmar accion"
+        title="Confirm action"
         visible={this.state.modalVisible}
         onOk={this.sendData}
         onCancel={() => this.setState({modalVisible:false})}>
           <div>
-            Por favor, ingrese un nombre para el conjunto de contenidos a enviar
+            Please, entrer a name for the set of contents to send 
             <Input value={this.state.inputValue} style={{width:"100px", marginLeft:"170px",marginTop:"20px"}} onChange={this.onChangeInput}></Input> 
-            <p> Seleccionar un patron de lectura de contenidos </p>
-            <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Patron de lectura" onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
+            <p> Select a content reading pattern </p>
+            <Select value={this.state.pattern? this.state.pattern : undefined} placeholder="Reading patterns" onChange={(e) => this.handlePattern(e)} style={{width:"230px", marginLeft:"130px"}}>
               {this.state.patterns.map( (pattern, index) => 
                 <Option 
                   key={index}   
@@ -465,8 +465,8 @@ export default class GoJs extends Component {
               )}
             </Select>
             { this.state.pattern &&
-              <Collapse bordered={false} defaultActiveKey={['1']} expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>}>                
-                <Panel header={this.state.pattern} key="1" style={customPanelStyle}>
+              <Collapse bordered={false} defaultActiveKey={['0']} expandIcon={({ isActive }) => <Icon type="caret-right" rotate={isActive ? 90 : 0}> </Icon>}>                
+                <Panel header={this.state.pattern} key="0" style={customPanelStyle}>
                   <p style={{ paddingLeft: 24 }}> {this.state.infoPatterns[this.state.index]} </p>
                 </Panel>
               </Collapse>
@@ -490,7 +490,7 @@ export default class GoJs extends Component {
           className="sendButton"         
           onClick={this.showSendDataModal} key={this.state.keyForRerender} 
           disabled={!this.state.flux || (this.state.flux && this.state.flux.contents.length !== (this.state.flux.links.length + 1))}> 
-            Deployar el skill 
+            Deploy to skill
           </Button>
           {this.state.error && this.error()}
         </div>

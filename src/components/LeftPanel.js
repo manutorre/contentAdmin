@@ -16,10 +16,6 @@ export default class LeftPanel extends React.Component {
   }
 
   selectCategory(value){
-    //var username = (new URL(window.location.href)).searchParams.get('username')
-
-
-    console.log(value)
     axios.get("https://alexa-apirest.herokuapp.com/users/admin/contentsByCategory/"+value)
     .then( (response) => {
       if (response.data.length > 0) {
@@ -33,10 +29,7 @@ export default class LeftPanel extends React.Component {
   }
 
   onContentDragEnd(event,content){
-    //var username = (new URL(window.location.href)).searchParams.get('username')
-
     if(event.dataTransfer.dropEffect !== 'none'){
-      //event.target.parentNode.style.display = "none"
       var hiddenCards = this.state.hiddenCards
       hiddenCards.push(content.identificador)
       this.setState({
@@ -44,9 +37,9 @@ export default class LeftPanel extends React.Component {
       })
       
       if(this.state.selectedItem !== ""){ 
-        this.selectCategory(this.state.selectedItem) //Si todavia no asigno categoria, mandar la que es por defecto
+        this.selectCategory(this.state.selectedItem) 
       }
-      else{ //Mandar la primera
+      else{ 
         if(this.props.categories.length > 0)
           this.selectCategory(this.props.categories[0]) 
         else
@@ -64,13 +57,9 @@ export default class LeftPanel extends React.Component {
   }
 
   onContentClick(event,content){
-    //var username = (new URL(window.location.href)).searchParams.get('username')
-
     if (!content.available){
       axios.delete("https://alexa-apirest.herokuapp.com/users/deleteContentUnavailable"
       ,{ params: { id:content.contentId }},function(data){
-          console.log(data)
-          //abrir en una nueva pestaña la url del contenido
           window.open(content.url, "_blank")
           window.location.reload()
       });
@@ -82,10 +71,8 @@ export default class LeftPanel extends React.Component {
       {
         position:"relative",
         width:"80%",
-        //height:"95px",
         border:"1px solid",
         margin:"0 auto",
-        //bottom:"40px",
         top:"5px"
       }   
     ) 
@@ -98,11 +85,11 @@ export default class LeftPanel extends React.Component {
     return(
       <div className="no-assigned__cards__container">
         <Tabs>
-          <TabPane tab="Contenidos" key="1">
+          <TabPane tab="Contents" key="1">
             {this.props.categories.length > 0 &&
               <div>
-              <h3 style={{color:"white",left:"10px"}}> Filtrar por categoria </h3>
-              <Select value={this.state.selectedItem? this.state.selectedItem : undefined}  placeholder="Categoria" 
+              <h3 style={{color:"white",left:"10px"}}> Search by category </h3>
+              <Select value={this.state.selectedItem? this.state.selectedItem : undefined}  placeholder="Category" 
                   onChange={(e) =>this.selectCategory(e)} style={styles}>
                   {this.props.categories.map( (category, index) => {
                     return(
@@ -140,7 +127,7 @@ export default class LeftPanel extends React.Component {
               
           )}
           </TabPane>
-          <TabPane tab="Grupos" key="2">
+          <TabPane tab="Skills" key="2">
               <FluxTab 
                 fluxes={this.props.fluxes}
                 addFluxToDiagram={this.props.addFluxToDiagram}  
