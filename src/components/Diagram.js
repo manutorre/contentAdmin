@@ -34,9 +34,9 @@ export default class GoJs extends Component {
       pattern:null,
       index:null,
       addedContents:[],
-      patterns:["Read paragraph by paragraph","Read a summary"],
-      infoPatterns:["If the text of the contents defined is long, it will be read paragraph by paragraph"
-      ,"If the text of the contents defined is long, will be read a summary of it"] 
+      patterns:["Read only titles","Read title and body content"],
+      infoPatterns:["The skill will list one by one just the titles of the contents"
+      ,"The skill will read the title, and then ask users to listen an introduction and the rest of the content"] 
     }
     this.onDiagramEnter = this.onDiagramEnter.bind(this)
     this.onDiagramDrop = this.onDiagramDrop.bind(this)
@@ -63,10 +63,10 @@ export default class GoJs extends Component {
   handlePattern(pattern){
     var index;
     switch(pattern){
-      case "Read paragraph by paragraph":
+      case "Read only titles":
         index = 0
       break;
-      case "Read a summary":
+      case "Read title and body content":
         index = 1
       break;
     }
